@@ -1,0 +1,224 @@
+// ═══════════════════════════════════════════════
+//  AniStream — Shared Utils + AniList API Layer
+// ═══════════════════════════════════════════════
+
+const ANILIST = 'https://graphql.anilist.co';
+
+// Core GraphQL fetcher
+async function gql(query, vars = {}) {
+  const r = await fetch(ANILIST, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables: vars })
+  });
+  const j = await r.json();
+  if (j.errors) throw new Error(j.errors[0].message);
+  return j.data;
+}
+
+// Shared media fields used in all queries
+const MF = `
+  id
+  title { romaji english native }
+  coverImage { extraLarge large color }
+  bannerImage
+  episodes
+  status
+  averageScore
+  genres
+  season
+  seasonYear
+  format
+  description(asHtml: false)
+`;
+
+// Query library
+const Q = {
+  trending: `{ Page(page:1,perPage:20){ media(type:ANIME,sort:TRENDING_DESC,status:RELEASING){ ${MF} } } }`,
+  popular:  `{ Page(page:1,perPage:20){ media(type:ANIME,sort:POPULARITY_DESC){ ${MF} } } }`,
+  topRated: `{ Page(page:1,perPage:20){ media(type:ANIME,sort:SCORE_DESC,averageScore_greater:72){ ${MF} } } }`,
+
+  search: `query($s:String,$p:Int){
+    Page(page:$p,perPage:24){
+      pageInfo{ hasNextPage currentPage total }
+      media(type:ANIME,search:$s,sort:SEARCH_MATCH){ ${MF} }
+    }
+  }`,
+
+  genre: `query($g:String,$p:Int){
+    Page(page:$p,perPage:24){
+      pageInfo{ hasNextPage }
+      media(type:ANIME,genre_in:[$g],sort:POPULARITY_DESC){ ${MF} }
+    }
+  }`,
+
+  browse: `query($sort:[MediaSort],$p:Int){
+    Page(page:$p,perPage:24){
+      pageInfo{ hasNextPage }
+      media(type:ANIME,sort:$sort){ ${MF} }
+    }
+  }`,
+
+  detail: `query($id:Int){
+    Media(id:$id,type:ANIME){
+      ${MF}
+      studios(isMain:true){ nodes{ name } }
+      nextAiringEpisode{ episode airingAt }
+      streamingEpisodes{ title thumbnail url site }
+      relations{
+        edges{
+          relationType
+          node{ id title{ romaji } coverImage{ large } type format }
+        }
+      }
+      recommendations(perPage:8){
+        nodes{ mediaRecommendation{ id title{ romaji } coverImage{ large } } }
+      }
+    }
+  }`,
+};
+
+// ─── LocalStorage helpers ─────────────────────
+const S = {
+  _get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  _set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+
+  history() { return this._get('as_history') || []; },
+  pushHistory(anime, ep) {
+    let h = this.history().filter(x => x.id !== anime.id);
+    h.unshift({
+      id: anime.id, ep,
+      title: anime.title.english || anime.title.romaji,
+      img: anime.coverImage?.large,
+      ts: Date.now()
+    });
+    this._set('as_history', h.slice(0, 30));
+  },
+
+  progress(id) { return this._get(`as_p${id}`) || { eps: [], last: null }; },
+  saveProgress(id, ep) {
+    const p = this.progress(id);
+    p.last = ep;
+    if (!p.eps.includes(ep)) p.eps.push(ep);
+    this._set(`as_p${id}`, p);
+  },
+  watched(id, ep) { return this.progress(id).eps.includes(ep); },
+};
+
+// ─── URL param helpers ────────────────────────
+const P = {
+  get: n => new URLSearchParams(location.search).get(n),
+  go(page, params) {
+    const u = new URL(page, location.origin);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    location.href = u.toString();
+  }
+};
+
+// ─── DOM shortcuts ────────────────────────────
+const $ = (s, ctx = document) => ctx.querySelector(s);
+const $$ = (s, ctx = document) => [...ctx.querySelectorAll(s)];
+const mk = (tag, cls = '', html = '') => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html) e.innerHTML = html;
+  return e;
+};
+
+// ─── Formatters ───────────────────────────────
+const fmt = {
+  status: s => ({ RELEASING:'Airing', FINISHED:'Finished', NOT_YET_RELEASED:'Upcoming', CANCELLED:'Cancelled', HIATUS:'On Hiatus' }[s] || s || '—'),
+  season: (s, y) => s ? `${s[0]}${s.slice(1).toLowerCase()} ${y||''}`.trim() : (y || '—'),
+  score:  s => s ? (s / 10).toFixed(1) : null,
+  plain:  h => h ? h.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'').trim() : '',
+};
+
+// ─── Anime card renderer ──────────────────────
+function card(a, extraCls = '') {
+  const title = a.title.english || a.title.romaji;
+  const img   = a.coverImage?.extraLarge || a.coverImage?.large || '';
+  const score = a.averageScore ? `<span class="acard-score">★ ${fmt.score(a.averageScore)}</span>` : '';
+  const eps   = a.episodes ? `<span>${a.episodes}ep</span>` : '';
+  const sep   = score && eps ? ' · ' : '';
+
+  const c = mk('div', `acard ${extraCls}`);
+  c.innerHTML = `
+    <img src="${img}" alt="" loading="lazy">
+    <div class="acard-info">
+      <div class="acard-title">${title}</div>
+      <div class="acard-meta">${score}${sep}${eps}</div>
+    </div>
+    <div class="acard-play">▶</div>`;
+
+  c.querySelector('img').onerror = function () {
+    this.parentElement.style.background = 'var(--card-hover)';
+    this.style.display = 'none';
+  };
+  c.addEventListener('click', () => P.go('anime.html', { id: a.id }));
+  return c;
+}
+
+// ─── Skeleton placeholders ────────────────────
+function skels(el, n = 10) {
+  el.innerHTML = Array(n).fill('<div class="acard skel" style="aspect-ratio:3/4"></div>').join('');
+}
+
+// ─── Toast notification ───────────────────────
+function toast(msg, ms = 3000) {
+  const t = mk('div', 'toast', msg);
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), ms);
+}
+
+// ─── Navbar live search ───────────────────────
+function initSearch() {
+  const inp = $('#navSearch');
+  const drop = $('#searchDrop');
+  if (!inp || !drop) return;
+
+  let debounce;
+  inp.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = inp.value.trim();
+    if (q.length < 2) { drop.classList.remove('open'); return; }
+
+    debounce = setTimeout(async () => {
+      try {
+        const d = await gql(Q.search, { s: q, p: 1 });
+        const items = d.Page.media.slice(0, 6);
+        if (!items.length) {
+          drop.innerHTML = '<div style="padding:1rem;color:var(--dim);font-size:0.82rem">No results</div>';
+        } else {
+          drop.innerHTML = items.map(a => {
+            const t = a.title.english || a.title.romaji;
+            return `<div class="sdrop-item" data-id="${a.id}">
+              <img src="${a.coverImage?.large||''}" alt="" loading="lazy" onerror="this.style.display='none'">
+              <div>
+                <div class="sdrop-title">${t}</div>
+                <div class="sdrop-meta">${fmt.status(a.status)} · ${a.episodes||'?'} ep</div>
+              </div>
+            </div>`;
+          }).join('');
+          $$('.sdrop-item', drop).forEach(el => {
+            el.addEventListener('click', () => P.go('anime.html', { id: el.dataset.id }));
+          });
+        }
+        drop.classList.add('open');
+      } catch (e) { console.error('[search]', e); }
+    }, 280);
+  });
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && inp.value.trim()) {
+      drop.classList.remove('open');
+      P.go('search.html', { q: inp.value.trim() });
+    }
+    if (e.key === 'Escape') { drop.classList.remove('open'); }
+  });
+
+  document.addEventListener('click', e => {
+    if (!inp.contains(e.target) && !drop.contains(e.target)) drop.classList.remove('open');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initSearch);

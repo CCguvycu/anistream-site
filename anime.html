@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime — AniStream</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">⟐ AniStream</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+  </ul>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime...">
+    <div class="search-drop" id="searchDrop"></div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- BANNER -->
+  <div class="banner" id="banner">
+    <div id="bannerImg" class="skel" style="width:100%;height:100%"></div>
+    <div class="banner-shade"></div>
+  </div>
+
+  <div class="detail-wrap">
+
+    <!-- HEADER -->
+    <div class="detail-head" id="detailHead">
+      <div class="skel detail-poster"></div>
+      <div style="flex:1">
+        <div class="skel" style="width:55%;height:34px;margin-bottom:0.5rem"></div>
+        <div class="skel" style="width:38%;height:18px;margin-bottom:0.9rem"></div>
+        <div class="skel" style="width:75%;height:40px"></div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="detail-body" id="detailBody">
+      <div id="mainCol"></div>
+      <div id="sideCol"></div>
+    </div>
+
+    <!-- RECOMMENDATIONS -->
+    <div id="recsWrap"></div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  const animeId = parseInt(P.get('id'));
+  if (!animeId) location.href = 'index.html';
+
+  async function load() {
+    const data = await gql(Q.detail, { id: animeId });
+    const a = data.Media;
+
+    document.title = `${a.title.english || a.title.romaji} — AniStream`;
+
+    // ── Banner ──
+    const bannerEl = $('#bannerImg');
+    const bannerSrc = a.bannerImage || a.coverImage?.extraLarge;
+    if (bannerSrc) {
+      const img = document.createElement('img');
+      img.src = bannerSrc;
+      img.alt = '';
+      img.style.cssText = a.bannerImage ? '' : 'filter:blur(6px);transform:scale(1.06);width:100%;height:100%;object-fit:cover';
+      bannerEl.replaceWith(img);
+      img.id = 'bannerImg';
+    }
+
+    // ── Header ──
+    const title = a.title.english || a.title.romaji;
+    const alt   = a.title.english ? a.title.romaji : a.title.native;
+    const genres = (a.genres || []).slice(0, 6).map(g =>
+      `<span class="gchip" onclick="P.go('search.html',{genre:'${g}'})">${g}</span>`
+    ).join('');
+    const studios = a.studios?.nodes?.map(s => s.name).join(', ') || '—';
+    const prog = S.progress(animeId);
+    const watchLabel = prog.last ? `▶ Continue — Ep ${prog.last}` : '▶ Watch Episode 1';
+    const watchEp    = prog.last || 1;
+
+    $('#detailHead').innerHTML = `
+      <img class="detail-poster" src="${a.coverImage?.extraLarge || a.coverImage?.large || ''}" alt="${title}" loading="lazy">
+      <div class="detail-info">
+        <h1 class="detail-title">${title}</h1>
+        ${alt ? `<div class="detail-alt">${alt}</div>` : ''}
+        <div class="stats">
+          ${a.averageScore ? `<div><div class="stat-val gold">★ ${fmt.score(a.averageScore)}</div><div class="stat-key">Score</div></div>` : ''}
+          ${a.episodes ? `<div><div class="stat-val">${a.episodes}</div><div class="stat-key">Episodes</div></div>` : ''}
+          <div><div class="stat-val">${fmt.status(a.status)}</div><div class="stat-key">Status</div></div>
+          ${a.season ? `<div><div class="stat-val">${fmt.season(a.season, a.seasonYear)}</div><div class="stat-key">Season</div></div>` : ''}
+        </div>
+        <div class="gchips">${genres}</div>
+        <div style="display:flex;gap:0.65rem;flex-wrap:wrap;margin-top:0.5rem">
+          <button class="btn btn-primary" onclick="P.go('watch.html',{id:${a.id},ep:${watchEp}})">${watchLabel}</button>
+        </div>
+      </div>`;
+
+    // ── Synopsis ──
+    const desc = fmt.plain(a.description || 'No description available.');
+    const short = desc.length > 420 ? desc.slice(0, 420) + '…' : desc;
+
+    $('#mainCol').innerHTML = `
+      <div>
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.7rem">Synopsis</h3>
+        <p class="synopsis" id="synText">${short}</p>
+        ${desc.length > 420 ? `<span class="read-more" id="readMore">Read more ▼</span>` : ''}
+      </div>
+      <div id="epsSection" style="margin-top:1.75rem"></div>`;
+
+    if (desc.length > 420) {
+      $('#readMore').addEventListener('click', () => {
+        $('#synText').textContent = desc;
+        $('#readMore').remove();
+      });
+    }
+
+    // ── Episodes ──
+    const totalEps = a.episodes || (a.nextAiringEpisode ? a.nextAiringEpisode.episode - 1 : 0);
+    const epsEl = $('#epsSection');
+
+    if (totalEps > 0) {
+      const prog = S.progress(animeId);
+      const watched = prog.eps || [];
+      const last    = prog.last;
+
+      epsEl.innerHTML = `
+        <div class="eps-head">
+          <div class="eps-title">Episodes <span style="color:var(--dim);font-weight:400">(${totalEps})</span></div>
+        </div>
+        <div class="ep-grid" id="epGrid"></div>`;
+
+      const grid = $('#epGrid');
+      for (let i = 1; i <= totalEps; i++) {
+        const cls = `epb${watched.includes(i) ? ' done' : ''}${last === i ? ' cur' : ''}`;
+        const btn = mk('a', cls, String(i));
+        btn.href = `watch.html?id=${animeId}&ep=${i}`;
+        grid.appendChild(btn);
+      }
+    } else {
+      epsEl.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📺</div>
+          <div class="empty-title">No episodes yet</div>
+          <div class="empty-body">This anime hasn't aired or episode data is unavailable.</div>
+        </div>`;
+    }
+
+    // ── Sidebar ──
+    $('#sideCol').innerHTML = `
+      <div class="info-box">
+        <div class="info-box-title">Information</div>
+        <div class="info-row"><span class="info-k">Format</span><span class="info-v">${a.format || '—'}</span></div>
+        <div class="info-row"><span class="info-k">Status</span><span class="info-v">${fmt.status(a.status)}</span></div>
+        <div class="info-row"><span class="info-k">Season</span><span class="info-v">${fmt.season(a.season, a.seasonYear)}</span></div>
+        <div class="info-row"><span class="info-k">Episodes</span><span class="info-v">${a.episodes || '?'}</span></div>
+        <div class="info-row"><span class="info-k">Studio</span><span class="info-v">${studios}</span></div>
+        <div class="info-row"><span class="info-k">Score</span><span class="info-v" style="color:var(--gold)">${a.averageScore ? fmt.score(a.averageScore) + ' / 10' : '—'}</span></div>
+      </div>
+      ${(a.genres||[]).length ? `
+      <div class="info-box">
+        <div class="info-box-title">Genres</div>
+        <div class="gchips">${(a.genres||[]).map(g=>`<span class="gchip" onclick="P.go('search.html',{genre:'${g}'})">${g}</span>`).join('')}</div>
+      </div>` : ''}`;
+
+    // ── Recommendations ──
+    const recs = a.recommendations?.nodes
+      ?.filter(n => n.mediaRecommendation)
+      .map(n => n.mediaRecommendation)
+      .slice(0, 8);
+
+    if (recs?.length) {
+      $('#recsWrap').innerHTML = `
+        <div class="section" style="padding-left:0;padding-right:0">
+          <div class="section-head"><h2 class="section-title">Recommended</h2></div>
+          <div class="scroll" id="recScroll"></div>
+        </div>`;
+      const scrl = $('#recScroll');
+      recs.forEach(r => {
+        const c = card(r);
+        c.style.cssText = 'flex:0 0 155px;height:220px';
+        scrl.appendChild(c);
+      });
+    }
+  }
+
+  load().catch(err => {
+    console.error(err);
+    $('#detailHead').innerHTML = `
+      <div class="empty" style="grid-column:1/-1">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Failed to load</div>
+        <div class="empty-body">${err.message}</div>
+      </div>`;
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watching — AniStream</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- hls.js for M3U8 playback -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  <style>
+    /* ── In-page video player ── */
+    .player-box {
+      position: relative;
+      background: #000;
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      border: 1px solid var(--border);
+    }
+    #videoEl {
+      width: 100%; height: 100%;
+      display: block; background: #000;
+    }
+    .player-overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.9rem; background: rgba(0,0,0,0.82);
+      transition: opacity 0.2s;
+    }
+    .player-overlay.hidden { display: none; }
+
+    .overlay-spinner { width: 44px; height: 44px;
+      border: 3px solid rgba(168,85,247,0.2); border-top-color: var(--purple);
+      border-radius: 50%; animation: spin 0.75s linear infinite; }
+
+    .overlay-msg { font-size: 0.85rem; color: var(--muted); text-align: center; max-width: 340px; line-height: 1.5; }
+    .overlay-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .overlay-sub { font-size: 0.78rem; color: var(--dim); margin-top: 0.2rem; }
+
+    /* ── Control bar ── */
+    .ctrl-bar {
+      display: flex; align-items: center;
+      gap: 0.65rem; margin: 0.9rem 0 0;
+      flex-wrap: wrap;
+    }
+    .ctrl-title { font-weight: 700; font-size: 0.92rem; flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pill-btns { display: flex; gap: 0.35rem; }
+    .pill {
+      padding: 0.3rem 0.8rem; border-radius: 100px;
+      font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border);
+      background: var(--card); color: var(--muted); cursor: pointer;
+      transition: all var(--t);
+    }
+    .pill:hover  { border-color: var(--purple); color: var(--text); }
+    .pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+    .pill:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Fallback launcher (shown when stream unavailable) ── */
+    .fallback-panel {
+      display: none;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 1.1rem 1.25rem; margin-top: 1rem;
+    }
+    .fallback-panel.visible { display: block; }
+    .fallback-head {
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em; color: var(--dim);
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem;
+    }
+    .fallback-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.5rem; }
+    .fb-btn {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 0.65rem 0.85rem;
+      text-decoration: none; color: var(--text); transition: all var(--t);
+    }
+    .fb-btn:hover { border-color: var(--purple); background: var(--card-hover); }
+    .fb-icon { width: 28px; height: 28px; border-radius: 6px; display: flex;
+      align-items: center; justify-content: center; font-size: 0.78rem;
+      font-weight: 800; flex-shrink: 0; color: #fff; }
+    .fb-name { font-size: 0.8rem; font-weight: 600; }
+    .fb-desc { font-size: 0.66rem; color: var(--dim); margin-top: 1px; }
+    .fb-arrow { font-size: 0.7rem; color: var(--dim); margin-left: auto; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">⟐ AniStream</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="#" id="backLink">← Back to Anime</a></li>
+  </ul>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime...">
+    <div class="search-drop" id="searchDrop"></div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="watch-layout">
+
+    <!-- MAIN COLUMN -->
+    <div class="watch-main">
+
+      <!-- Video player -->
+      <div class="player-box">
+        <video id="videoEl" controls playsinline></video>
+        <!-- Loading state -->
+        <div class="player-overlay" id="overlayLoading">
+          <div class="overlay-spinner"></div>
+          <div>
+            <div class="overlay-title" id="loadTitle">Finding stream…</div>
+            <div class="overlay-sub"  id="loadSub">Searching AllAnime database</div>
+          </div>
+        </div>
+        <!-- Error / no-stream state -->
+        <div class="player-overlay hidden" id="overlayError">
+          <div style="font-size:2rem">⚠</div>
+          <div>
+            <div class="overlay-title">Stream unavailable</div>
+            <div class="overlay-msg" id="errMsg">Use the links below to watch on an external site.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="ctrl-bar">
+        <div class="ctrl-title" id="ctrlTitle">Loading…</div>
+        <div class="pill-btns">
+          <button class="pill active" id="btnSub"  onclick="setType('sub')">SUB</button>
+          <button class="pill"        id="btnDub"  onclick="setType('dub')">DUB</button>
+        </div>
+        <div class="pill-btns">
+          <button class="pill" id="prevBtn" disabled>← Prev</button>
+          <button class="pill" id="nextBtn" disabled>Next →</button>
+        </div>
+        <span id="srcLabel" style="font-size:0.72rem;color:var(--dim)"></span>
+      </div>
+
+      <!-- Fallback launcher (visible when stream fails) -->
+      <div class="fallback-panel" id="fallbackPanel">
+        <div class="fallback-head">
+          Stream unavailable — watch on <span class="fmhy-badge">FMHY Picks</span>
+        </div>
+        <div class="fallback-grid" id="fallbackGrid"></div>
+      </div>
+
+    </div>
+
+    <!-- EPISODE SIDEBAR -->
+    <div class="ep-sidebar">
+      <div class="ep-sidebar-head">
+        <span>Episodes</span>
+        <span id="epCount">—</span>
+      </div>
+      <div class="ep-list" id="epList">
+        <div style="padding:2rem;text-align:center;color:var(--dim);font-size:0.85rem">Loading…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+//  AllAnime API (api.allanime.day/api)
+//  Key fix: needs translationtype + countryOrigin vars,
+//  and proper GraphQL variable passing (not inline strings).
+//  Also: AniList returns "ONE PIECE" all-caps — use romaji
+//  title first since it has correct casing ("One Piece").
+// ═══════════════════════════════════════════════════════
+const AA = 'https://api.allanime.day/api';
+
+async function aaGql(query, variables = {}) {
+  const r = await fetch(AA, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables })
+  });
+  if (!r.ok) throw new Error(`AllAnime HTTP ${r.status}`);
+  const j = await r.json();
+  if (j.errors) console.warn('[AllAnime] GQL errors:', j.errors);
+  return j.data;
+}
+
+// GraphQL queries with proper typed variables
+// Note: argument is translationType (camelCase) — confirmed via introspection
+const AA_SEARCH_Q = `
+  query($search: SearchInput, $limit: Int, $page: Int,
+        $translationType: VaildTranslationTypeEnumType,
+        $countryOrigin: VaildCountryOriginEnumType) {
+    shows(search: $search, limit: $limit, page: $page,
+          translationType: $translationType, countryOrigin: $countryOrigin) {
+      edges { _id name englishName nativeName aniListId }
+    }
+  }`;
+
+const AA_EPISODE_Q = `
+  query($showId: String!, $episodeString: String!,
+        $translationType: VaildTranslationTypeEnumType!) {
+    episode(showId: $showId, episodeString: $episodeString,
+            translationType: $translationType) {
+      sourceUrls
+    }
+  }`;
+
+async function findShowId(animeData, anilistId) {
+  // Try titles in order: romaji first (proper casing),
+  // then english, native — AllAnime search is case-sensitive.
+  const titles = [
+    animeData.title.romaji,
+    animeData.title.english,
+    animeData.title.native,
+  ].filter(Boolean);
+
+  for (const title of titles) {
+    console.log(`[AllAnime] Searching: "${title}"`);
+    const d = await aaGql(AA_SEARCH_Q, {
+      search: { query: title, allowAdult: false, allowUnknown: false },
+      limit: 10,
+      page: 1,
+      translationType: 'sub',
+      countryOrigin: 'JP',
+    });
+    const edges = d?.shows?.edges || [];
+    console.log(`[AllAnime] Results for "${title}":`, edges.length, edges.map(e => e.name));
+    if (edges.length > 0) {
+      // Prefer aniListId match, otherwise take first
+      const match = edges.find(e => String(e.aniListId) === String(anilistId)) || edges[0];
+      console.log('[AllAnime] Matched show:', match.name, 'id:', match._id);
+      return match._id;
+    }
+  }
+  return null;
+}
+
+async function getEpSources(showId, ep, type) {
+  const d = await aaGql(AA_EPISODE_Q, {
+    showId,
+    episodeString: String(ep),
+    translationType: type,
+  });
+  const urls = d?.episode?.sourceUrls || [];
+  console.log(`[AllAnime] Episode ${ep} sources (${type}):`, urls.length, urls.map(s => s.sourceName));
+  return urls;
+}
+
+// AllAnime encodes source URLs as '--' + base64 of JSON {url:...} or plain URL
+function decodeSourceUrl(raw) {
+  if (!raw) return null;
+  if (raw.startsWith('https://')) return raw;
+  if (!raw.startsWith('--')) return null;
+  try {
+    let b64 = raw.slice(2);
+    b64 += '='.repeat((4 - (b64.length % 4)) % 4);
+    const decoded = atob(b64);
+    if (decoded.startsWith('https://')) return decoded;
+    try { const o = JSON.parse(decoded); return o.url || o.link || null; } catch {}
+    return null;
+  } catch { return null; }
+}
+
+// v.allanime.day/clock? URLs are indirect — one more fetch gives the real M3U8
+async function resolveUrl(url) {
+  if (!url) return null;
+  if (url.includes('allanime') && url.includes('clock')) {
+    try {
+      const r = await fetch(url, { headers: { Referer: 'https://allmanga.to/' } });
+      const d = await r.json();
+      return d?.links?.[0]?.link || d?.url || null;
+    } catch { return null; }
+  }
+  return url;
+}
+
+// ─── HLS / Video player ───────────────────────────────
+let hlsInst = null;
+
+function loadStream(url, sourceName) {
+  const video = $('#videoEl');
+  if (hlsInst) { hlsInst.destroy(); hlsInst = null; }
+
+  if (Hls.isSupported() && (url.includes('.m3u8') || url.includes('m3u8'))) {
+    hlsInst = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 120, enableWorker: true });
+    hlsInst.loadSource(url);
+    hlsInst.attachMedia(video);
+    hlsInst.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+    hlsInst.on(Hls.Events.ERROR, (e, d) => { if (d.fatal) showFallback('HLS fatal error'); });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = url;
+    video.play().catch(() => {});
+  } else {
+    video.src = url;
+    video.play().catch(() => {});
+  }
+
+  $('#srcLabel').textContent = sourceName ? `via ${sourceName}` : '';
+  hideOverlays();
+}
+
+function hideOverlays() {
+  $('#overlayLoading').classList.add('hidden');
+  $('#overlayError').classList.add('hidden');
+}
+function showLoading(msg = 'Searching AllAnime database') {
+  $('#overlayLoading').classList.remove('hidden');
+  $('#overlayError').classList.add('hidden');
+  $('#loadSub').textContent = msg;
+}
+function showFallback(reason) {
+  $('#overlayLoading').classList.add('hidden');
+  $('#overlayError').classList.remove('hidden');
+  $('#errMsg').textContent = reason || 'No stream found. Use the links below.';
+  $('#fallbackPanel').classList.add('visible');
+}
+
+// ─── Main player logic ────────────────────────────────
+let animeId   = parseInt(P.get('id'));
+let curEp     = parseInt(P.get('ep')) || 1;
+let totalEps  = 0;
+let animeData = null;
+let aaShowId  = null;
+let subType   = 'sub';
+
+if (!animeId) location.href = 'index.html';
+$('#backLink').href = `anime.html?id=${animeId}`;
+
+async function playEpisode(ep, type) {
+  subType = type;
+  showLoading('Looking up show…');
+  history.replaceState({}, '', `?id=${animeId}&ep=${ep}`);
+
+  try {
+    const title = animeData.title.english || animeData.title.romaji;
+
+    // Cache AllAnime show ID per anime (pass full animeData for multi-title search)
+    if (!aaShowId) {
+      showLoading('Searching AllAnime database…');
+      aaShowId = await findShowId(animeData, animeId);
+    }
+    if (!aaShowId) throw new Error(`"${title}" not found in AllAnime — try a different anime`);
+
+    showLoading(`Fetching episode ${ep} sources…`);
+    const sources = await getEpSources(aaShowId, ep, type);
+    if (!sources.length) throw new Error(`No ${type} sources for episode ${ep}`);
+
+    // Sort by priority descending, try each until one plays
+    sources.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+    for (const src of sources) {
+      showLoading(`Trying source: ${src.sourceName || '?'}…`);
+      const decoded = decodeSourceUrl(src.sourceUrl);
+      if (!decoded) continue;
+      const stream = await resolveUrl(decoded);
+      if (stream) {
+        loadStream(stream, src.sourceName);
+        S.saveProgress(animeId, ep);
+        S.pushHistory(animeData, ep);
+        return;
+      }
+    }
+
+    throw new Error('All sources failed to resolve');
+  } catch (err) {
+    console.warn('[player]', err.message);
+    showFallback(err.message);
+    S.saveProgress(animeId, ep);
+    if (animeData) S.pushHistory(animeData, ep);
+  }
+}
+
+function setType(t) {
+  subType = t;
+  $('#btnSub').classList.toggle('active', t === 'sub');
+  $('#btnDub').classList.toggle('active', t === 'dub');
+  playEpisode(curEp, t);
+}
+
+function goEp(ep) {
+  if (ep < 1 || (totalEps > 0 && ep > totalEps)) return;
+  curEp = ep;
+  aaShowId = null; // re-confirm show on episode change not needed, keep cached
+  updateNav();
+  updateTitle();
+  highlightSidebar();
+  buildFallback();
+  playEpisode(ep, subType);
+}
+
+function updateNav() {
+  $('#prevBtn').disabled = curEp <= 1;
+  $('#nextBtn').disabled = totalEps > 0 && curEp >= totalEps;
+}
+function updateTitle() {
+  if (!animeData) return;
+  const t = animeData.title.english || animeData.title.romaji;
+  $('#ctrlTitle').textContent = `${t} · Episode ${curEp}`;
+  document.title = `Ep ${curEp} — ${t} — AniStream`;
+}
+
+$('#prevBtn').addEventListener('click', () => goEp(curEp - 1));
+$('#nextBtn').addEventListener('click', () => goEp(curEp + 1));
+
+// ─── Fallback launcher ────────────────────────────────
+const FB_SITES = [
+  { name:'Miruro',       tags:'⭐ #1 · Sub+Dub',    color:'#a855f7', l:'M', url:(id,ep,t)=>`https://miruro.tv/watch?id=${id}&ep=${ep}` },
+  { name:'AllManga',     tags:'Sub+Dub',             color:'#06b6d4', l:'A', url:(id,ep,t)=>`https://allmanga.to/bangumi/${id}` },
+  { name:'KickAssAnime', tags:'Sub+Dub · Auto-Next', color:'#f59e0b', l:'K', url:(id,ep,t)=>`https://kickass-anime.ro/search?q=${encodeURIComponent(t)}` },
+  { name:'animepahe',    tags:'720p+',               color:'#10b981', l:'P', url:(id,ep,t)=>`https://animepahe.pw/?q=${encodeURIComponent(t)}` },
+  { name:'9anime',       tags:'Sub+Dub · HD',        color:'#3b82f6', l:'9', url:(id,ep,t)=>`https://9anime.to/search?keyword=${encodeURIComponent(t)}` },
+  { name:'HiAnime',      tags:'Multi-server',        color:'#8b5cf6', l:'H', url:(id,ep,t)=>`https://hianime.to/search?keyword=${encodeURIComponent(t)}` },
+  { name:'Animetsu',     tags:'Fast CDN',            color:'#ec4899', l:'T', url:(id,ep,t)=>`https://animetsu.cc/search?keyword=${encodeURIComponent(t)}` },
+  { name:'aniwave',      tags:'Clean UI',            color:'#14b8a6', l:'W', url:(id,ep,t)=>`https://aniwave.to/filter?keyword=${encodeURIComponent(t)}` },
+  { name:'Vidbox',       tags:'Multi-source',        color:'#dc2626', l:'V', url:(id,ep,t)=>`https://vidbox.cc/anime/${id}/${ep}` },
+];
+
+function buildFallback() {
+  if (!animeData) return;
+  const title = animeData.title.english || animeData.title.romaji;
+  const grid  = $('#fallbackGrid');
+  grid.innerHTML = '';
+  FB_SITES.forEach(s => {
+    const a = mk('a', 'fb-btn');
+    a.href = s.url(animeId, curEp, title);
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.innerHTML = `
+      <div class="fb-icon" style="background:${s.color}">${s.l}</div>
+      <div>
+        <div class="fb-name">${s.name}</div>
+        <div class="fb-desc">${s.tags}</div>
+      </div>
+      <div class="fb-arrow">↗</div>`;
+    grid.appendChild(a);
+  });
+}
+
+// ─── Episode sidebar ──────────────────────────────────
+function buildSidebar(total) {
+  const prog = S.progress(animeId);
+  const done = prog.eps || [];
+  const list = $('#epList');
+  $('#epCount').textContent = `${total} eps`;
+  list.innerHTML = '';
+  for (let i = 1; i <= total; i++) {
+    const row = mk('div', `ep-row${i === curEp ? ' on' : ''}`);
+    row.dataset.ep = i;
+    row.innerHTML = `<div class="ep-num">Ep ${i}</div>
+      <div><div class="ep-name">Episode ${i}</div>
+      <div class="ep-sub">${done.includes(i) ? '✓ Watched' : ''}</div></div>`;
+    row.addEventListener('click', () => goEp(i));
+    list.appendChild(row);
+  }
+  setTimeout(() => {
+    const a = $('.ep-row.on', list);
+    if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, 150);
+}
+function highlightSidebar() {
+  $$('.ep-row').forEach(r => r.classList.toggle('on', parseInt(r.dataset.ep) === curEp));
+  const a = $('.ep-row.on');
+  if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// ─── Init ─────────────────────────────────────────────
+async function init() {
+  const data = await gql(Q.detail, { id: animeId });
+  animeData  = data.Media;
+  totalEps   = animeData.episodes
+    || (animeData.nextAiringEpisode ? animeData.nextAiringEpisode.episode - 1 : 50);
+  if (curEp < 1) curEp = 1;
+  if (totalEps && curEp > totalEps) curEp = totalEps;
+
+  updateNav();
+  updateTitle();
+  buildSidebar(totalEps);
+  buildFallback();
+  playEpisode(curEp, 'sub');
+}
+
+init().catch(err => {
+  console.error(err);
+  showFallback('Failed to load anime data');
+});
+</script>
+</body>
+</html>
