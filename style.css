@@ -379,7 +379,8 @@ button { font-family: inherit; cursor: pointer; }
 /* ─── EP SIDEBAR ─────────────────────────── */
 .ep-sidebar {
   background: var(--card); border-radius: var(--r);
-  max-height: calc(100vh - 100px); display: flex; flex-direction: column;
+  height: calc(100vh - 160px); min-height: 520px;
+  display: flex; flex-direction: column;
   overflow: hidden; position: sticky; top: 74px;
 }
 .ep-sidebar-head {
