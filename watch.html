@@ -6,84 +6,85 @@
   <title>Watching — AniStream</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- hls.js for M3U8 playback -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
   <style>
-    /* ── In-page video player ── */
+    /* ── Player ── */
     .player-box {
       position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
       background: #000;
       border-radius: var(--r-lg);
       overflow: hidden;
-      aspect-ratio: 16/9;
       border: 1px solid var(--border);
     }
-    #videoEl {
+    .player-box iframe {
+      position: absolute; inset: 0;
       width: 100%; height: 100%;
-      display: block; background: #000;
+      border: none;
     }
-    .player-overlay {
+    .player-init {
       position: absolute; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 0.9rem; background: rgba(0,0,0,0.82);
-      transition: opacity 0.2s;
+      gap: 1rem; background: var(--card);
+      cursor: pointer; transition: background var(--t);
     }
-    .player-overlay.hidden { display: none; }
+    .player-init:hover { background: var(--card-hover); }
+    .player-init-icon {
+      width: 70px; height: 70px; border-radius: 50%;
+      background: var(--grad); display: flex; align-items: center;
+      justify-content: center; font-size: 2rem;
+      box-shadow: 0 0 30px rgba(168,85,247,0.4);
+    }
+    .player-init-title { font-size: 1rem; font-weight: 700; }
+    .player-init-sub   { font-size: 0.8rem; color: var(--muted); }
+    .player-init-note  {
+      font-size: 0.72rem; color: var(--dim);
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem; border-radius: 100px; margin-top: 0.25rem;
+    }
 
-    .overlay-spinner { width: 44px; height: 44px;
-      border: 3px solid rgba(168,85,247,0.2); border-top-color: var(--purple);
-      border-radius: 50%; animation: spin 0.75s linear infinite; }
-
-    .overlay-msg { font-size: 0.85rem; color: var(--muted); text-align: center; max-width: 340px; line-height: 1.5; }
-    .overlay-title { font-size: 1rem; font-weight: 700; color: var(--text); }
-    .overlay-sub { font-size: 0.78rem; color: var(--dim); margin-top: 0.2rem; }
-
-    /* ── Control bar ── */
+    /* ── Controls ── */
     .ctrl-bar {
-      display: flex; align-items: center;
-      gap: 0.65rem; margin: 0.9rem 0 0;
-      flex-wrap: wrap;
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 0.6rem; margin: 0.85rem 0 0;
     }
-    .ctrl-title { font-weight: 700; font-size: 0.92rem; flex: 1; min-width: 0;
+    .ctrl-title { font-weight: 700; font-size: 0.9rem; flex: 1; min-width: 0;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pill-btns { display: flex; gap: 0.35rem; }
+
+    .pill-row { display: flex; gap: 0.35rem; flex-wrap: wrap; }
     .pill {
-      padding: 0.3rem 0.8rem; border-radius: 100px;
-      font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border);
-      background: var(--card); color: var(--muted); cursor: pointer;
-      transition: all var(--t);
+      padding: 0.3rem 0.85rem; border-radius: 100px;
+      font-size: 0.75rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); cursor: pointer; transition: all var(--t);
     }
     .pill:hover  { border-color: var(--purple); color: var(--text); }
     .pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
-    .pill:disabled { opacity: 0.35; cursor: not-allowed; }
+    .pill:disabled { opacity: 0.35; pointer-events: none; }
 
-    /* ── Fallback launcher (shown when stream unavailable) ── */
-    .fallback-panel {
-      display: none;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--r-lg); padding: 1.1rem 1.25rem; margin-top: 1rem;
+    /* ── Source bar ── */
+    .src-bar {
+      display: flex; align-items: center; gap: 0.5rem;
+      flex-wrap: wrap; margin-top: 0.6rem;
+      font-size: 0.75rem; color: var(--dim);
     }
-    .fallback-panel.visible { display: block; }
-    .fallback-head {
-      font-size: 0.78rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.07em; color: var(--dim);
-      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem;
+    .src-btn {
+      padding: 0.28rem 0.75rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); cursor: pointer; transition: all var(--t);
     }
-    .fallback-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.5rem; }
-    .fb-btn {
-      display: flex; align-items: center; gap: 0.6rem;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r-sm); padding: 0.65rem 0.85rem;
-      text-decoration: none; color: var(--text); transition: all var(--t);
+    .src-btn:hover  { border-color: var(--purple); color: var(--text); }
+    .src-btn.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+
+    /* ── Nav hint ── */
+    .nav-hint {
+      background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2);
+      border-radius: var(--r-sm); padding: 0.55rem 0.9rem;
+      font-size: 0.78rem; color: var(--muted); margin-top: 0.7rem;
+      display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.5;
     }
-    .fb-btn:hover { border-color: var(--purple); background: var(--card-hover); }
-    .fb-icon { width: 28px; height: 28px; border-radius: 6px; display: flex;
-      align-items: center; justify-content: center; font-size: 0.78rem;
-      font-weight: 800; flex-shrink: 0; color: #fff; }
-    .fb-name { font-size: 0.8rem; font-weight: 600; }
-    .fb-desc { font-size: 0.66rem; color: var(--dim); margin-top: 1px; }
-    .fb-arrow { font-size: 0.7rem; color: var(--dim); margin-left: auto; }
   </style>
 </head>
 <body>
@@ -107,47 +108,36 @@
     <!-- MAIN COLUMN -->
     <div class="watch-main">
 
-      <!-- Video player -->
-      <div class="player-box">
-        <video id="videoEl" controls playsinline></video>
-        <!-- Loading state -->
-        <div class="player-overlay" id="overlayLoading">
-          <div class="overlay-spinner"></div>
-          <div>
-            <div class="overlay-title" id="loadTitle">Finding stream…</div>
-            <div class="overlay-sub"  id="loadSub">Searching AllAnime database</div>
-          </div>
-        </div>
-        <!-- Error / no-stream state -->
-        <div class="player-overlay hidden" id="overlayError">
-          <div style="font-size:2rem">⚠</div>
-          <div>
-            <div class="overlay-title">Stream unavailable</div>
-            <div class="overlay-msg" id="errMsg">Use the links below to watch on an external site.</div>
-          </div>
+      <!-- Player -->
+      <div class="player-box" id="playerBox">
+        <!-- Click-to-load screen shown before user activates player -->
+        <div class="player-init" id="playerInit" onclick="activatePlayer()">
+          <div class="player-init-icon">▶</div>
+          <div class="player-init-title" id="initTitle">Loading…</div>
+          <div class="player-init-sub"   id="initSub">Click to open player</div>
+          <div class="player-init-note">Opens in embedded player below</div>
         </div>
       </div>
 
       <!-- Controls -->
       <div class="ctrl-bar">
         <div class="ctrl-title" id="ctrlTitle">Loading…</div>
-        <div class="pill-btns">
-          <button class="pill active" id="btnSub"  onclick="setType('sub')">SUB</button>
-          <button class="pill"        id="btnDub"  onclick="setType('dub')">DUB</button>
-        </div>
-        <div class="pill-btns">
+        <div class="pill-row">
           <button class="pill" id="prevBtn" disabled>← Prev</button>
           <button class="pill" id="nextBtn" disabled>Next →</button>
         </div>
-        <span id="srcLabel" style="font-size:0.72rem;color:var(--dim)"></span>
       </div>
 
-      <!-- Fallback launcher (visible when stream fails) -->
-      <div class="fallback-panel" id="fallbackPanel">
-        <div class="fallback-head">
-          Stream unavailable — watch on <span class="fmhy-badge">FMHY Picks</span>
-        </div>
-        <div class="fallback-grid" id="fallbackGrid"></div>
+      <!-- Source switcher -->
+      <div class="src-bar">
+        <span>Source:</span>
+        <div id="srcBtnRow" class="pill-row"></div>
+      </div>
+
+      <!-- Navigation hint -->
+      <div class="nav-hint">
+        ⟐ The player opens the streaming site inside this page.
+        Navigate to your episode and press play — all within the same window.
       </div>
 
     </div>
@@ -168,350 +158,98 @@
 
 <script src="app.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════
-//  AllAnime API (api.allanime.day/api)
-//  Key fix: needs translationtype + countryOrigin vars,
-//  and proper GraphQL variable passing (not inline strings).
-//  Also: AniList returns "ONE PIECE" all-caps — use romaji
-//  title first since it has correct casing ("One Piece").
-// ═══════════════════════════════════════════════════════
-const AA = 'https://api.allanime.day/api';
-
-async function aaGql(query, variables = {}) {
-  const r = await fetch(AA, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, variables })
-  });
-  if (!r.ok) throw new Error(`AllAnime HTTP ${r.status}`);
-  const j = await r.json();
-  if (j.errors?.some(e => e.message === 'NEED_CAPTCHA')) throw new Error('CAPTCHA_REQUIRED');
-  if (j.errors) console.warn('[AllAnime] GQL errors:', j.errors);
-  return j.data;
-}
-
-// GraphQL queries with proper typed variables
-// Note: argument is translationType (camelCase) — confirmed via introspection
-const AA_SEARCH_Q = `
-  query($search: SearchInput, $limit: Int, $page: Int,
-        $translationType: VaildTranslationTypeEnumType,
-        $countryOrigin: VaildCountryOriginEnumType) {
-    shows(search: $search, limit: $limit, page: $page,
-          translationType: $translationType, countryOrigin: $countryOrigin) {
-      edges { _id name englishName nativeName aniListId }
-    }
-  }`;
-
-const AA_EPISODE_Q = `
-  query($showId: String!, $episodeString: String!,
-        $translationType: VaildTranslationTypeEnumType!) {
-    episode(showId: $showId, episodeString: $episodeString,
-            translationType: $translationType) {
-      sourceUrls
-    }
-  }`;
-
-async function findShowId(animeData, anilistId) {
-  // Try titles in order: romaji first (proper casing),
-  // then english, native — AllAnime search is case-sensitive.
-  const titles = [
-    animeData.title.romaji,
-    animeData.title.english,
-    animeData.title.native,
-  ].filter(Boolean);
-
-  for (const title of titles) {
-    console.log(`[AllAnime] Searching: "${title}"`);
-    const d = await aaGql(AA_SEARCH_Q, {
-      search: { query: title, allowAdult: false, allowUnknown: false },
-      limit: 10,
-      page: 1,
-      translationType: 'sub',
-      countryOrigin: 'JP',
-    });
-    const edges = d?.shows?.edges || [];
-    console.log(`[AllAnime] Results for "${title}":`, edges.length, edges.map(e => e.name));
-    if (edges.length > 0) {
-      // Prefer aniListId match, otherwise take first
-      const match = edges.find(e => String(e.aniListId) === String(anilistId)) || edges[0];
-      console.log('[AllAnime] Matched show:', match.name, 'id:', match._id);
-      return match._id;
-    }
-  }
-  return null;
-}
-
-async function getEpSources(showId, ep, type) {
-  const d = await aaGql(AA_EPISODE_Q, {
-    showId,
-    episodeString: String(ep),
-    translationType: type,
-  });
-  const urls = d?.episode?.sourceUrls || [];
-  console.log(`[AllAnime] Episode ${ep} sources (${type}):`, urls.length, urls.map(s => s.sourceName));
-  return urls;
-}
-
-// AllAnime encodes source URLs as '--' + base64 of JSON {url:...} or plain URL
-function decodeSourceUrl(raw) {
-  if (!raw) return null;
-  if (raw.startsWith('https://')) return raw;
-  if (!raw.startsWith('--')) return null;
-  try {
-    let b64 = raw.slice(2);
-    b64 += '='.repeat((4 - (b64.length % 4)) % 4);
-    const decoded = atob(b64);
-    if (decoded.startsWith('https://')) return decoded;
-    try { const o = JSON.parse(decoded); return o.url || o.link || null; } catch {}
-    return null;
-  } catch { return null; }
-}
-
-// v.allanime.day/clock? URLs are indirect — one more fetch gives the real M3U8
-async function resolveUrl(url) {
-  if (!url) return null;
-  if (url.includes('allanime') && url.includes('clock')) {
-    try {
-      const r = await fetch(url, { headers: { Referer: 'https://allmanga.to/' } });
-      const d = await r.json();
-      return d?.links?.[0]?.link || d?.url || null;
-    } catch { return null; }
-  }
-  return url;
-}
-
-// ─── HLS / Video player ───────────────────────────────
-let hlsInst = null;
-
-function loadStream(url, sourceName) {
-  const video = $('#videoEl');
-  if (hlsInst) { hlsInst.destroy(); hlsInst = null; }
-  // Remove any active gogo iframe
-  document.querySelector('.gogo-frame')?.remove();
-  video.style.display = '';
-
-  if (Hls.isSupported() && (url.includes('.m3u8') || url.includes('m3u8'))) {
-    hlsInst = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 120, enableWorker: true });
-    hlsInst.loadSource(url);
-    hlsInst.attachMedia(video);
-    hlsInst.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-    hlsInst.on(Hls.Events.ERROR, (e, d) => { if (d.fatal) showFallback('HLS fatal error'); });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = url;
-    video.play().catch(() => {});
-  } else {
-    video.src = url;
-    video.play().catch(() => {});
-  }
-
-  $('#srcLabel').textContent = sourceName ? `via ${sourceName}` : '';
-  hideOverlays();
-}
-
-function hideOverlays() {
-  $('#overlayLoading').classList.add('hidden');
-  $('#overlayError').classList.add('hidden');
-}
-function showLoading(msg = 'Searching AllAnime database') {
-  $('#overlayLoading').classList.remove('hidden');
-  $('#overlayError').classList.add('hidden');
-  $('#loadSub').textContent = msg;
-}
-function showFallback(reason) {
-  $('#overlayLoading').classList.add('hidden');
-  $('#overlayError').classList.remove('hidden');
-  $('#errMsg').textContent = reason || 'No stream found. Use the links below.';
-  $('#fallbackPanel').classList.add('visible');
-}
-
-// ─── Iframe embed fallback ────────────────────────────
-// Confirmed working 2026-05-20 (live header + content tests):
-//   embtaku.pro  — GogoAnime CDN, slug-based, 200 + embeddable ✓
-//   vidbinge.dev — AniList ID SPA, embeddable ✓ (loads via JS)
-//   hianime.to   — search fallback, embeddable ✓
-
-function toSlug(title) {
-  return (title || '')
-    .toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9\s]/g, '')
-    .trim()
-    .replace(/\s+/g, '-');
-}
-
-const IFRAME_SOURCES = [
+// ─── Embed sources (confirmed embeddable 2026-05-20) ─────
+// 9anime, aniwave, hianime, animetsu: all 200 + no X-Frame-Options.
+// embtaku.pro redirects HTTP → browser blocks (mixed content).
+// All these sites are SPAs — navigation stays within the iframe.
+const SOURCES = [
   {
-    name: 'GogoAnime',
-    url: (id, ep, title) =>
-      `https://embtaku.pro/streaming.php?id=${toSlug(title)}-episode-${ep}`,
-  },
-  {
-    name: 'VidBinge',
-    url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}`,
+    name: '9anime',
+    color: '#3b82f6',
+    url: (id, ep, title) => `https://9anime.to/search?keyword=${encodeURIComponent(title)}`,
   },
   {
     name: 'HiAnime',
-    url: (id, ep, title) =>
-      `https://hianime.to/search?keyword=${encodeURIComponent(title || '')}`,
+    color: '#8b5cf6',
+    url: (id, ep, title) => `https://hianime.to/search?keyword=${encodeURIComponent(title)}`,
+  },
+  {
+    name: 'aniwave',
+    color: '#14b8a6',
+    url: (id, ep, title) => `https://aniwave.to/filter?keyword=${encodeURIComponent(title)}`,
+  },
+  {
+    name: 'Animetsu',
+    color: '#ec4899',
+    url: (id, ep, title) => `https://animetsu.cc/search?keyword=${encodeURIComponent(title)}`,
   },
 ];
 
-let iframeSrcIdx = 0;
-
-function loadIframeSource(idx, ep) {
-  iframeSrcIdx = idx;
-  const src   = IFRAME_SOURCES[idx];
-  const title = animeData?.title?.romaji || animeData?.title?.english || '';
-  const url   = src.url(animeId, ep, title);
-
-  console.log(`[embed] Trying ${src.name}:`, url);
-  showLoading(`Loading ${src.name}…`);
-
-  const box   = document.querySelector('.player-box');
-  const video = $('#videoEl');
-  video.style.display = 'none';
-
-  document.querySelector('.gogo-frame')?.remove();
-
-  const iframe = document.createElement('iframe');
-  iframe.className = 'gogo-frame';
-  iframe.src = url;
-  iframe.allowFullscreen = true;
-  iframe.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
-  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;z-index:2';
-  iframe.onload = () => {
-    hideOverlays();
-    // Browsers block autoplay in cross-origin iframes — show hint
-    const hint = mk('div', '');
-    hint.id = 'playHint';
-    hint.style.cssText = 'position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;font-size:0.78rem;padding:0.4rem 1rem;border-radius:100px;pointer-events:none;z-index:10;white-space:nowrap';
-    hint.textContent = '▶ Click the player to start video';
-    document.querySelector('#playHint')?.remove();
-    box.appendChild(hint);
-    setTimeout(() => hint.remove(), 5000);
-  };
-  box.appendChild(iframe);
-
-  // Update source switcher buttons
-  $$('.embed-src-btn').forEach((b, i) => b.classList.toggle('on', i === idx));
-  $('#srcLabel').textContent = `via ${src.name}`;
-}
-
-function tryGogoEmbed(ep) {
-  // Build embed source switcher bar if not already present
-  let bar = $('#embedSrcBar');
-  if (!bar) {
-    bar = mk('div', '', '');
-    bar.id = 'embedSrcBar';
-    bar.style.cssText = 'display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem';
-    const label = mk('span', '', 'Embed source:');
-    label.style.cssText = 'font-size:0.75rem;color:var(--dim);align-self:center';
-    bar.appendChild(label);
-    IFRAME_SOURCES.forEach((s, i) => {
-      const b = mk('button', `src-btn embed-src-btn${i === 0 ? ' on' : ''}`, s.name);
-      b.addEventListener('click', () => loadIframeSource(i, curEp));
-      bar.appendChild(b);
-    });
-    // Insert bar before ctrl-bar
-    const ctrl = document.querySelector('.ctrl-bar');
-    ctrl.parentNode.insertBefore(bar, ctrl);
-  }
-
-  loadIframeSource(0, ep);
-}
-
-// ─── Main player logic ────────────────────────────────
 let animeId   = parseInt(P.get('id'));
 let curEp     = parseInt(P.get('ep')) || 1;
 let totalEps  = 0;
 let animeData = null;
-let aaShowId  = null;
-let subType   = 'sub';
+let srcIdx    = 0;
+let playerActive = false;
 
 if (!animeId) location.href = 'index.html';
 $('#backLink').href = `anime.html?id=${animeId}`;
 
-async function playEpisode(ep, type) {
-  subType = type;
-  showLoading('Looking up show…');
-  history.replaceState({}, '', `?id=${animeId}&ep=${ep}`);
-
-  try {
-    const title = animeData.title.english || animeData.title.romaji;
-
-    // Cache AllAnime show ID per anime (pass full animeData for multi-title search)
-    if (!aaShowId) {
-      showLoading('Searching AllAnime database…');
-      aaShowId = await findShowId(animeData, animeId);
-    }
-    if (!aaShowId) throw new Error(`"${title}" not found in AllAnime — try a different anime`);
-
-    showLoading(`Fetching episode ${ep} sources…`);
-    let sources = await getEpSources(aaShowId, ep, type);
-
-    // Auto-fallback: if dub has no sources, silently try sub
-    if (!sources.length && type === 'dub') {
-      console.log('[player] No dub sources, falling back to sub');
-      showLoading('No dub found — trying sub…');
-      sources = await getEpSources(aaShowId, ep, 'sub');
-      if (sources.length) {
-        subType = 'sub';
-        $('#btnSub').classList.add('active');
-        $('#btnDub').classList.remove('active');
-        toast('No dub available — playing sub');
-      }
-    }
-
-    if (!sources.length) throw new Error(`No sources found for episode ${ep}`);
-
-    // Sort by priority descending, try each until one plays
-    sources.sort((a, b) => (b.priority || 0) - (a.priority || 0));
-
-    for (const src of sources) {
-      showLoading(`Trying source: ${src.sourceName || '?'}…`);
-      const decoded = decodeSourceUrl(src.sourceUrl);
-      if (!decoded) continue;
-      const stream = await resolveUrl(decoded);
-      if (stream) {
-        loadStream(stream, src.sourceName);
-        S.saveProgress(animeId, ep);
-        S.pushHistory(animeData, ep);
-        return;
-      }
-    }
-
-    throw new Error('All sources failed to resolve');
-  } catch (err) {
-    console.warn('[player]', err.message);
-    S.saveProgress(animeId, ep);
-    if (animeData) S.pushHistory(animeData, ep);
-
-    if (err.message === 'CAPTCHA_REQUIRED') {
-      // AllAnime blocks cross-origin episode requests with CAPTCHA —
-      // fall back to GogoAnime's own embed player
-      tryGogoEmbed(ep);
-    } else {
-      showFallback(err.message);
-    }
-  }
+// Build source buttons
+function buildSrcBtns() {
+  const row = $('#srcBtnRow');
+  row.innerHTML = '';
+  SOURCES.forEach((s, i) => {
+    const b = mk('button', `src-btn${i === srcIdx ? ' active' : ''}`, s.name);
+    b.addEventListener('click', () => {
+      srcIdx = i;
+      $$('.src-btn').forEach((x, j) => x.classList.toggle('active', j === i));
+      if (playerActive) loadIframe(i);
+    });
+    row.appendChild(b);
+  });
 }
 
-function setType(t) {
-  subType = t;
-  $('#btnSub').classList.toggle('active', t === 'sub');
-  $('#btnDub').classList.toggle('active', t === 'dub');
-  playEpisode(curEp, t);
+// Activate player on first click
+function activatePlayer() {
+  playerActive = true;
+  $('#playerInit').remove();
+  loadIframe(srcIdx);
+  S.saveProgress(animeId, curEp);
+  if (animeData) S.pushHistory(animeData, curEp);
 }
 
+// Load iframe with selected source
+function loadIframe(idx) {
+  srcIdx = idx;
+  $$('.src-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+
+  const box   = $('#playerBox');
+  const title = animeData?.title.romaji || animeData?.title.english || '';
+  const url   = SOURCES[idx].url(animeId, curEp, title);
+
+  // Remove existing iframe
+  box.querySelector('iframe')?.remove();
+
+  const f = document.createElement('iframe');
+  f.src = url;
+  f.allowFullscreen = true;
+  f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
+  box.appendChild(f);
+}
+
+// Episode navigation
 function goEp(ep) {
   if (ep < 1 || (totalEps > 0 && ep > totalEps)) return;
   curEp = ep;
-  aaShowId = null; // re-confirm show on episode change not needed, keep cached
+  history.replaceState({}, '', `?id=${animeId}&ep=${ep}`);
   updateNav();
   updateTitle();
   highlightSidebar();
-  buildFallback();
-  playEpisode(ep, subType);
+  updateInitScreen();
+  if (playerActive) loadIframe(srcIdx);
+  S.saveProgress(animeId, ep);
+  if (animeData) S.pushHistory(animeData, ep);
 }
 
 function updateNav() {
@@ -521,47 +259,20 @@ function updateNav() {
 function updateTitle() {
   if (!animeData) return;
   const t = animeData.title.english || animeData.title.romaji;
-  $('#ctrlTitle').textContent = `${t} · Episode ${curEp}`;
+  $('#ctrlTitle').textContent  = `${t} · Episode ${curEp}`;
   document.title = `Ep ${curEp} — ${t} — AniStream`;
+}
+function updateInitScreen() {
+  if (!animeData) return;
+  const t = animeData.title.english || animeData.title.romaji;
+  $('#initTitle').textContent = `${t} · Episode ${curEp}`;
+  $('#initSub').textContent   = `Click to open ${SOURCES[srcIdx].name}`;
 }
 
 $('#prevBtn').addEventListener('click', () => goEp(curEp - 1));
 $('#nextBtn').addEventListener('click', () => goEp(curEp + 1));
 
-// ─── Fallback launcher ────────────────────────────────
-const FB_SITES = [
-  { name:'Miruro',       tags:'⭐ #1 · Sub+Dub',    color:'#a855f7', l:'M', url:(id,ep,t)=>`https://miruro.tv/watch?id=${id}&ep=${ep}` },
-  { name:'AllManga',     tags:'Sub+Dub',             color:'#06b6d4', l:'A', url:(id,ep,t)=>`https://allmanga.to/bangumi/${id}` },
-  { name:'KickAssAnime', tags:'Sub+Dub · Auto-Next', color:'#f59e0b', l:'K', url:(id,ep,t)=>`https://kickass-anime.ro/search?q=${encodeURIComponent(t)}` },
-  { name:'animepahe',    tags:'720p+',               color:'#10b981', l:'P', url:(id,ep,t)=>`https://animepahe.pw/?q=${encodeURIComponent(t)}` },
-  { name:'9anime',       tags:'Sub+Dub · HD',        color:'#3b82f6', l:'9', url:(id,ep,t)=>`https://9anime.to/search?keyword=${encodeURIComponent(t)}` },
-  { name:'HiAnime',      tags:'Multi-server',        color:'#8b5cf6', l:'H', url:(id,ep,t)=>`https://hianime.to/search?keyword=${encodeURIComponent(t)}` },
-  { name:'Animetsu',     tags:'Fast CDN',            color:'#ec4899', l:'T', url:(id,ep,t)=>`https://animetsu.cc/search?keyword=${encodeURIComponent(t)}` },
-  { name:'aniwave',      tags:'Clean UI',            color:'#14b8a6', l:'W', url:(id,ep,t)=>`https://aniwave.to/filter?keyword=${encodeURIComponent(t)}` },
-  { name:'Vidbox',       tags:'Multi-source',        color:'#dc2626', l:'V', url:(id,ep,t)=>`https://vidbox.cc/anime/${id}/${ep}` },
-];
-
-function buildFallback() {
-  if (!animeData) return;
-  const title = animeData.title.english || animeData.title.romaji;
-  const grid  = $('#fallbackGrid');
-  grid.innerHTML = '';
-  FB_SITES.forEach(s => {
-    const a = mk('a', 'fb-btn');
-    a.href = s.url(animeId, curEp, title);
-    a.target = '_blank'; a.rel = 'noopener noreferrer';
-    a.innerHTML = `
-      <div class="fb-icon" style="background:${s.color}">${s.l}</div>
-      <div>
-        <div class="fb-name">${s.name}</div>
-        <div class="fb-desc">${s.tags}</div>
-      </div>
-      <div class="fb-arrow">↗</div>`;
-    grid.appendChild(a);
-  });
-}
-
-// ─── Episode sidebar ──────────────────────────────────
+// Episode sidebar
 function buildSidebar(total) {
   const prog = S.progress(animeId);
   const done = prog.eps || [];
@@ -571,9 +282,12 @@ function buildSidebar(total) {
   for (let i = 1; i <= total; i++) {
     const row = mk('div', `ep-row${i === curEp ? ' on' : ''}`);
     row.dataset.ep = i;
-    row.innerHTML = `<div class="ep-num">Ep ${i}</div>
-      <div><div class="ep-name">Episode ${i}</div>
-      <div class="ep-sub">${done.includes(i) ? '✓ Watched' : ''}</div></div>`;
+    row.innerHTML = `
+      <div class="ep-num">Ep ${i}</div>
+      <div>
+        <div class="ep-name">Episode ${i}</div>
+        <div class="ep-sub">${done.includes(i) ? '✓ Watched' : ''}</div>
+      </div>`;
     row.addEventListener('click', () => goEp(i));
     list.appendChild(row);
   }
@@ -588,7 +302,7 @@ function highlightSidebar() {
   if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
-// ─── Init ─────────────────────────────────────────────
+// Init
 async function init() {
   const data = await gql(Q.detail, { id: animeId });
   animeData  = data.Media;
@@ -597,16 +311,16 @@ async function init() {
   if (curEp < 1) curEp = 1;
   if (totalEps && curEp > totalEps) curEp = totalEps;
 
+  buildSrcBtns();
   updateNav();
   updateTitle();
+  updateInitScreen();
   buildSidebar(totalEps);
-  buildFallback();
-  playEpisode(curEp, 'sub');
 }
 
 init().catch(err => {
   console.error(err);
-  showFallback('Failed to load anime data');
+  $('#initTitle').textContent = '⚠ Failed to load';
 });
 </script>
 </body>
