@@ -126,6 +126,7 @@
         <div class="pill-row">
           <button class="pill" id="prevBtn" disabled>← Prev</button>
           <button class="pill" id="nextBtn" disabled>Next →</button>
+          <button class="pill" id="refreshBtn" title="Reload player">↺ Retry</button>
         </div>
       </div>
 
@@ -244,6 +245,9 @@ function updateInitScreen() {
 
 $('#prevBtn').addEventListener('click', () => goEp(curEp - 1));
 $('#nextBtn').addEventListener('click', () => goEp(curEp + 1));
+$('#refreshBtn').addEventListener('click', () => {
+  if (playerActive) loadIframe(srcIdx);
+});
 
 // Episode sidebar
 function buildSidebar(total) {
