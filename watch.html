@@ -179,20 +179,8 @@ let playerActive = false;
 if (!animeId) location.href = 'index.html';
 $('#backLink').href = `anime.html?id=${animeId}`;
 
-// Build source buttons
-function buildSrcBtns() {
-  const row = $('#srcBtnRow');
-  row.innerHTML = '';
-  SOURCES.forEach((s, i) => {
-    const b = mk('button', `src-btn${i === srcIdx ? ' active' : ''}`, s.name);
-    b.addEventListener('click', () => {
-      srcIdx = i;
-      $$('.src-btn').forEach((x, j) => x.classList.toggle('active', j === i));
-      if (playerActive) loadIframe(i);
-    });
-    row.appendChild(b);
-  });
-}
+// Single source — no switcher needed
+function buildSrcBtns() {}
 
 // Activate player on first click
 function activatePlayer() {
