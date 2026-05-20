@@ -325,13 +325,35 @@ function showFallback(reason) {
 }
 
 // ─── Iframe embed fallback ────────────────────────────
-// When AllAnime CAPTCHA blocks direct HLS, fall back to
-// iframe embed providers. All use AniList IDs — no slug needed.
+// Confirmed working 2026-05-20 (live header + content tests):
+//   embtaku.pro  — GogoAnime CDN, slug-based, 200 + embeddable ✓
+//   vidbinge.dev — AniList ID SPA, embeddable ✓ (loads via JS)
+//   hianime.to   — search fallback, embeddable ✓
+
+function toSlug(title) {
+  return (title || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
 const IFRAME_SOURCES = [
-  { name: '2anime',    url: (id, ep) => `https://2anime.xyz/embed/${id}/${ep}` },
-  { name: 'VidBinge',  url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}` },
-  { name: 'VidLink',   url: (id, ep) => `https://vidlink.pro/anime/${id}/${ep}` },
-  { name: 'HiAnime',   url: (id, ep, t) => `https://hianime.to/search?keyword=${encodeURIComponent(t||'')}` },
+  {
+    name: 'GogoAnime',
+    url: (id, ep, title) =>
+      `https://embtaku.pro/streaming.php?id=${toSlug(title)}-episode-${ep}`,
+  },
+  {
+    name: 'VidBinge',
+    url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}`,
+  },
+  {
+    name: 'HiAnime',
+    url: (id, ep, title) =>
+      `https://hianime.to/search?keyword=${encodeURIComponent(title || '')}`,
+  },
 ];
 
 let iframeSrcIdx = 0;
@@ -357,7 +379,17 @@ function loadIframeSource(idx, ep) {
   iframe.allowFullscreen = true;
   iframe.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
   iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;z-index:2';
-  iframe.onload = () => hideOverlays();
+  iframe.onload = () => {
+    hideOverlays();
+    // Browsers block autoplay in cross-origin iframes — show hint
+    const hint = mk('div', '');
+    hint.id = 'playHint';
+    hint.style.cssText = 'position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;font-size:0.78rem;padding:0.4rem 1rem;border-radius:100px;pointer-events:none;z-index:10;white-space:nowrap';
+    hint.textContent = '▶ Click the player to start video';
+    document.querySelector('#playHint')?.remove();
+    box.appendChild(hint);
+    setTimeout(() => hint.remove(), 5000);
+  };
   box.appendChild(iframe);
 
   // Update source switcher buttons
