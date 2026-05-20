@@ -347,8 +347,22 @@ async function playEpisode(ep, type) {
     if (!aaShowId) throw new Error(`"${title}" not found in AllAnime — try a different anime`);
 
     showLoading(`Fetching episode ${ep} sources…`);
-    const sources = await getEpSources(aaShowId, ep, type);
-    if (!sources.length) throw new Error(`No ${type} sources for episode ${ep}`);
+    let sources = await getEpSources(aaShowId, ep, type);
+
+    // Auto-fallback: if dub has no sources, silently try sub
+    if (!sources.length && type === 'dub') {
+      console.log('[player] No dub sources, falling back to sub');
+      showLoading('No dub found — trying sub…');
+      sources = await getEpSources(aaShowId, ep, 'sub');
+      if (sources.length) {
+        subType = 'sub';
+        $('#btnSub').classList.add('active');
+        $('#btnDub').classList.remove('active');
+        toast('No dub available — playing sub');
+      }
+    }
+
+    if (!sources.length) throw new Error(`No sources found for episode ${ep}`);
 
     // Sort by priority descending, try each until one plays
     sources.sort((a, b) => (b.priority || 0) - (a.priority || 0));
