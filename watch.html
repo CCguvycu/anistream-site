@@ -324,61 +324,68 @@ function showFallback(reason) {
   $('#fallbackPanel').classList.add('visible');
 }
 
-// ─── GogoAnime embed fallback ─────────────────────────
-// When AllAnime CAPTCHA blocks direct streams, fall back to
-// GogoAnime's own embed player (embtaku.pro) using the slug
-// constructed from the romaji title. No API call needed.
-function titleToSlug(romaji) {
-  return romaji
-    .toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')  // strip accents
-    .replace(/[^a-z0-9\s]/g, '')
-    .trim()
-    .replace(/\s+/g, '-');
-}
+// ─── Iframe embed fallback ────────────────────────────
+// When AllAnime CAPTCHA blocks direct HLS, fall back to
+// iframe embed providers. All use AniList IDs — no slug needed.
+const IFRAME_SOURCES = [
+  { name: '2anime',    url: (id, ep) => `https://2anime.xyz/embed/${id}/${ep}` },
+  { name: 'VidBinge',  url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}` },
+  { name: 'VidLink',   url: (id, ep) => `https://vidlink.pro/anime/${id}/${ep}` },
+  { name: 'HiAnime',   url: (id, ep, t) => `https://hianime.to/search?keyword=${encodeURIComponent(t||'')}` },
+];
 
-function tryGogoEmbed(ep) {
-  const romaji = animeData?.title?.romaji || '';
-  const slug   = titleToSlug(romaji);
-  const episodeId = `${slug}-episode-${ep}`;
+let iframeSrcIdx = 0;
 
-  // GogoAnime embed player — uses their own CDN, no auth required
-  const GOGO_HOSTS = [
-    `https://embtaku.pro/streaming.php?id=${episodeId}&title=${encodeURIComponent(romaji)}&cover=&type=1`,
-    `https://s3taku.com/streaming.php?id=${episodeId}&title=${encodeURIComponent(romaji)}&cover=&type=1`,
-  ];
+function loadIframeSource(idx, ep) {
+  iframeSrcIdx = idx;
+  const src   = IFRAME_SOURCES[idx];
+  const title = animeData?.title?.romaji || animeData?.title?.english || '';
+  const url   = src.url(animeId, ep, title);
 
-  console.log('[Gogo] Trying embed:', episodeId);
-  showLoading(`Trying GogoAnime embed… (${episodeId})`);
+  console.log(`[embed] Trying ${src.name}:`, url);
+  showLoading(`Loading ${src.name}…`);
 
-  // Replace <video> with iframe in the player box
   const box   = document.querySelector('.player-box');
   const video = $('#videoEl');
   video.style.display = 'none';
 
-  // Remove any previous gogo iframe
-  const prev = box.querySelector('.gogo-frame');
-  if (prev) prev.remove();
+  document.querySelector('.gogo-frame')?.remove();
 
   const iframe = document.createElement('iframe');
   iframe.className = 'gogo-frame';
-  iframe.src = GOGO_HOSTS[0];
+  iframe.src = url;
   iframe.allowFullscreen = true;
-  iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+  iframe.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
   iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;z-index:2';
-
   iframe.onload = () => hideOverlays();
-  setTimeout(() => {
-    // If still loading after 8s, show fallback
-    if (!$('#overlayLoading').classList.contains('hidden')) {
-      showFallback('GogoAnime embed timed out');
-    }
-  }, 8000);
-
   box.appendChild(iframe);
 
-  // Update source label
-  $('#srcLabel').textContent = `via GogoAnime (${slug})`;
+  // Update source switcher buttons
+  $$('.embed-src-btn').forEach((b, i) => b.classList.toggle('on', i === idx));
+  $('#srcLabel').textContent = `via ${src.name}`;
+}
+
+function tryGogoEmbed(ep) {
+  // Build embed source switcher bar if not already present
+  let bar = $('#embedSrcBar');
+  if (!bar) {
+    bar = mk('div', '', '');
+    bar.id = 'embedSrcBar';
+    bar.style.cssText = 'display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem';
+    const label = mk('span', '', 'Embed source:');
+    label.style.cssText = 'font-size:0.75rem;color:var(--dim);align-self:center';
+    bar.appendChild(label);
+    IFRAME_SOURCES.forEach((s, i) => {
+      const b = mk('button', `src-btn embed-src-btn${i === 0 ? ' on' : ''}`, s.name);
+      b.addEventListener('click', () => loadIframeSource(i, curEp));
+      bar.appendChild(b);
+    });
+    // Insert bar before ctrl-bar
+    const ctrl = document.querySelector('.ctrl-bar');
+    ctrl.parentNode.insertBefore(bar, ctrl);
+  }
+
+  loadIframeSource(0, ep);
 }
 
 // ─── Main player logic ────────────────────────────────
