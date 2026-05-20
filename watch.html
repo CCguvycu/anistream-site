@@ -128,10 +128,9 @@
         </div>
       </div>
 
-      <!-- Source switcher -->
+      <!-- Source label -->
       <div class="src-bar">
-        <span>Source:</span>
-        <div id="srcBtnRow" class="pill-row"></div>
+        <span style="color:var(--purple-lt);font-weight:600">⟐ Animetsu</span>
       </div>
 
       <!-- Navigation hint -->
@@ -163,21 +162,6 @@
 // embtaku.pro redirects HTTP → browser blocks (mixed content).
 // All these sites are SPAs — navigation stays within the iframe.
 const SOURCES = [
-  {
-    name: '9anime',
-    color: '#3b82f6',
-    url: (id, ep, title) => `https://9anime.to/filter?keyword=${encodeURIComponent(title)}`,
-  },
-  {
-    name: 'HiAnime',
-    color: '#8b5cf6',
-    url: (id, ep, title) => `https://hianime.to/search?keyword=${encodeURIComponent(title)}`,
-  },
-  {
-    name: 'aniwave',
-    color: '#14b8a6',
-    url: (id, ep, title) => `https://aniwave.to/filter?keyword=${encodeURIComponent(title)}`,
-  },
   {
     name: 'Animetsu',
     color: '#ec4899',
