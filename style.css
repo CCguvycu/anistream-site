@@ -235,6 +235,19 @@ button { font-family: inherit; cursor: pointer; }
 }
 .acard:hover .acard-play { opacity: 1; }
 
+.acard-heart {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(0,0,0,0.55); border: none;
+  color: rgba(255,255,255,0.5); font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0; transition: all var(--t);
+  backdrop-filter: blur(4px); z-index: 3;
+}
+.acard:hover .acard-heart { opacity: 1; }
+.acard-heart.saved { opacity: 1; color: #f472b6; background: rgba(244,114,182,0.2); }
+.acard-heart:hover { transform: scale(1.15); color: #f472b6; }
+
 /* ─── SKELETON ───────────────────────────── */
 .skel {
   background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);

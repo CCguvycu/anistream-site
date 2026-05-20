@@ -95,6 +95,16 @@ const S = {
     this._set('as_history', h.slice(0, 30));
   },
 
+  watchlist()        { return this._get('as_wl') || []; },
+  inWatchlist(id)    { return this.watchlist().some(x => x.id === id); },
+  addToWatchlist(a)  {
+    const wl = this.watchlist().filter(x => x.id !== a.id);
+    wl.unshift({ id: a.id, title: a.title.english || a.title.romaji, img: a.coverImage?.large, genres: a.genres, score: a.averageScore, ts: Date.now() });
+    this._set('as_wl', wl);
+  },
+  removeFromWatchlist(id) { this._set('as_wl', this.watchlist().filter(x => x.id !== id)); },
+  toggleWatchlist(a) { this.inWatchlist(a.id) ? this.removeFromWatchlist(a.id) : this.addToWatchlist(a); },
+
   progress(id) { return this._get(`as_p${id}`) || { eps: [], last: null }; },
   saveProgress(id, ep) {
     const p = this.progress(id);
@@ -141,6 +151,7 @@ function card(a, extraCls = '') {
   const eps   = a.episodes ? `<span>${a.episodes}ep</span>` : '';
   const sep   = score && eps ? ' · ' : '';
 
+  const saved = S.inWatchlist(a.id);
   const c = mk('div', `acard ${extraCls}`);
   c.innerHTML = `
     <img src="${img}" alt="" loading="lazy">
@@ -148,12 +159,22 @@ function card(a, extraCls = '') {
       <div class="acard-title">${title}</div>
       <div class="acard-meta">${score}${sep}${eps}</div>
     </div>
-    <div class="acard-play">▶</div>`;
+    <div class="acard-play">▶</div>
+    <button class="acard-heart${saved ? ' saved' : ''}" title="${saved ? 'Remove from list' : 'Add to list'}">♥</button>`;
 
   c.querySelector('img').onerror = function () {
     this.parentElement.style.background = 'var(--card-hover)';
     this.style.display = 'none';
   };
+  c.querySelector('.acard-heart').addEventListener('click', e => {
+    e.stopPropagation();
+    S.toggleWatchlist(a);
+    const btn = e.currentTarget;
+    const nowSaved = S.inWatchlist(a.id);
+    btn.classList.toggle('saved', nowSaved);
+    btn.title = nowSaved ? 'Remove from list' : 'Add to list';
+    toast(nowSaved ? `Added to My List` : `Removed from My List`);
+  });
   c.addEventListener('click', () => P.go('anime.html', { id: a.id }));
   return c;
 }
