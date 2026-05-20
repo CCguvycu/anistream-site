@@ -185,6 +185,7 @@ async function aaGql(query, variables = {}) {
   });
   if (!r.ok) throw new Error(`AllAnime HTTP ${r.status}`);
   const j = await r.json();
+  if (j.errors?.some(e => e.message === 'NEED_CAPTCHA')) throw new Error('CAPTCHA_REQUIRED');
   if (j.errors) console.warn('[AllAnime] GQL errors:', j.errors);
   return j.data;
 }
@@ -285,6 +286,9 @@ let hlsInst = null;
 function loadStream(url, sourceName) {
   const video = $('#videoEl');
   if (hlsInst) { hlsInst.destroy(); hlsInst = null; }
+  // Remove any active gogo iframe
+  document.querySelector('.gogo-frame')?.remove();
+  video.style.display = '';
 
   if (Hls.isSupported() && (url.includes('.m3u8') || url.includes('m3u8'))) {
     hlsInst = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 120, enableWorker: true });
@@ -318,6 +322,63 @@ function showFallback(reason) {
   $('#overlayError').classList.remove('hidden');
   $('#errMsg').textContent = reason || 'No stream found. Use the links below.';
   $('#fallbackPanel').classList.add('visible');
+}
+
+// ─── GogoAnime embed fallback ─────────────────────────
+// When AllAnime CAPTCHA blocks direct streams, fall back to
+// GogoAnime's own embed player (embtaku.pro) using the slug
+// constructed from the romaji title. No API call needed.
+function titleToSlug(romaji) {
+  return romaji
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')  // strip accents
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function tryGogoEmbed(ep) {
+  const romaji = animeData?.title?.romaji || '';
+  const slug   = titleToSlug(romaji);
+  const episodeId = `${slug}-episode-${ep}`;
+
+  // GogoAnime embed player — uses their own CDN, no auth required
+  const GOGO_HOSTS = [
+    `https://embtaku.pro/streaming.php?id=${episodeId}&title=${encodeURIComponent(romaji)}&cover=&type=1`,
+    `https://s3taku.com/streaming.php?id=${episodeId}&title=${encodeURIComponent(romaji)}&cover=&type=1`,
+  ];
+
+  console.log('[Gogo] Trying embed:', episodeId);
+  showLoading(`Trying GogoAnime embed… (${episodeId})`);
+
+  // Replace <video> with iframe in the player box
+  const box   = document.querySelector('.player-box');
+  const video = $('#videoEl');
+  video.style.display = 'none';
+
+  // Remove any previous gogo iframe
+  const prev = box.querySelector('.gogo-frame');
+  if (prev) prev.remove();
+
+  const iframe = document.createElement('iframe');
+  iframe.className = 'gogo-frame';
+  iframe.src = GOGO_HOSTS[0];
+  iframe.allowFullscreen = true;
+  iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;z-index:2';
+
+  iframe.onload = () => hideOverlays();
+  setTimeout(() => {
+    // If still loading after 8s, show fallback
+    if (!$('#overlayLoading').classList.contains('hidden')) {
+      showFallback('GogoAnime embed timed out');
+    }
+  }, 8000);
+
+  box.appendChild(iframe);
+
+  // Update source label
+  $('#srcLabel').textContent = `via GogoAnime (${slug})`;
 }
 
 // ─── Main player logic ────────────────────────────────
@@ -383,9 +444,16 @@ async function playEpisode(ep, type) {
     throw new Error('All sources failed to resolve');
   } catch (err) {
     console.warn('[player]', err.message);
-    showFallback(err.message);
     S.saveProgress(animeId, ep);
     if (animeData) S.pushHistory(animeData, ep);
+
+    if (err.message === 'CAPTCHA_REQUIRED') {
+      // AllAnime blocks cross-origin episode requests with CAPTCHA —
+      // fall back to GogoAnime's own embed player
+      tryGogoEmbed(ep);
+    } else {
+      showFallback(err.message);
+    }
   }
 }
 
