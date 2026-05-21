@@ -115,6 +115,37 @@
   const moreWrap = $('#moreWrap');
   const moreBtn  = $('#moreBtn');
 
+  function movieCard(a) {
+    const title = a.title.english || a.title.romaji;
+    const img   = a.coverImage?.extraLarge || a.coverImage?.large || '';
+    const score = a.averageScore ? `<span class="acard-score">★ ${fmt.score(a.averageScore)}</span>` : '';
+    const dur   = a.duration ? `<span>${a.duration}m</span>` : '';
+    const saved = S.inWatchlist(a.id);
+    const c = mk('div', 'acard');
+    c.innerHTML = `
+      <img src="${img}" alt="" loading="lazy">
+      <div class="acard-info">
+        <div class="acard-title">${title}</div>
+        <div class="acard-meta">${score}${score && dur ? ' · ' : ''}${dur}</div>
+      </div>
+      <div class="acard-play">▶</div>
+      <button class="acard-heart${saved ? ' saved' : ''}" title="${saved ? 'Remove from list' : 'Add to list'}">♥</button>`;
+    c.querySelector('img').onerror = function() {
+      this.parentElement.style.background = 'var(--card-hover)';
+      this.style.display = 'none';
+    };
+    c.querySelector('.acard-heart').addEventListener('click', e => {
+      e.stopPropagation();
+      S.toggleWatchlist(a);
+      const btn = e.currentTarget;
+      const nowSaved = S.inWatchlist(a.id);
+      btn.classList.toggle('saved', nowSaved);
+      toast(nowSaved ? 'Added to My List' : 'Removed from My List');
+    });
+    c.addEventListener('click', () => location.href = 'browse.html');
+    return c;
+  }
+
   async function fetchMovies(p) {
     const d = await gql(MOVIE_QUERY, { sort: [currentSort], p });
     return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
@@ -149,11 +180,7 @@
     const featured = items.find(a => a.bannerImage) || items[0];
     setHero(featured);
 
-    items.forEach(a => {
-      const c = card(a);
-      c.onclick = () => location.href = 'browse.html';
-      grid.appendChild(c);
-    });
+    items.forEach(a => grid.appendChild(movieCard(a)));
     if (hasMore) moreWrap.style.display = 'block';
   }
 
@@ -162,11 +189,7 @@
     loading = true; moreBtn.textContent = 'Loading…'; moreBtn.disabled = true;
     page++;
     const { items, hasMore } = await fetchMovies(page);
-    items.forEach(a => {
-      const c = card(a);
-      c.onclick = () => location.href = 'browse.html';
-      grid.appendChild(c);
-    });
+    items.forEach(a => grid.appendChild(movieCard(a)));
     if (!hasMore) moreWrap.style.display = 'none';
     else { moreBtn.textContent = 'Load More'; moreBtn.disabled = false; }
     loading = false;
