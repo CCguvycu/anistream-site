@@ -71,6 +71,39 @@
   </div>
 </div>
 
+<style>
+  .dev-banner {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+    z-index: 9999; display: flex; align-items: center; justify-content: center;
+  }
+  .dev-modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 2.5rem 2rem;
+    max-width: 420px; width: 90%; text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .dev-modal-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .dev-modal-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .dev-modal-body { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+  .dev-modal-btns { display: flex; gap: 0.75rem; justify-content: center; }
+</style>
+
+<div class="dev-banner" id="devBanner">
+  <div class="dev-modal">
+    <div class="dev-modal-icon">🚧</div>
+    <div class="dev-modal-title">Under Development</div>
+    <div class="dev-modal-body">
+      The Movies page is currently being built.<br>
+      Some features may be incomplete or change soon.
+    </div>
+    <div class="dev-modal-btns">
+      <button class="btn btn-primary" onclick="document.getElementById('devBanner').remove()">Got it, continue</button>
+      <a href="index.html" class="btn btn-ghost">Go Home</a>
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 <script>
   const MOVIE_QUERY = `query($sort:[MediaSort],$p:Int){
