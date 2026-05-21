@@ -129,7 +129,7 @@
     const dur   = a.duration   ? `<span>${a.duration} min</span>` : '';
     $('#heroMovieMeta').innerHTML = [score, yr, dur].filter(Boolean).join('<span style="color:var(--dim)">·</span>');
     $('#moviesHero').style.cursor = 'default';
-    $('#heroWatchBtn').onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
+    $('#heroWatchBtn').onclick = () => location.href = 'browse.html';
   }
 
   async function load(sort) {
@@ -151,7 +151,7 @@
 
     items.forEach(a => {
       const c = card(a);
-      c.onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
+      c.onclick = () => location.href = 'browse.html';
       grid.appendChild(c);
     });
     if (hasMore) moreWrap.style.display = 'block';
@@ -164,7 +164,7 @@
     const { items, hasMore } = await fetchMovies(page);
     items.forEach(a => {
       const c = card(a);
-      c.onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
+      c.onclick = () => location.href = 'browse.html';
       grid.appendChild(c);
     });
     if (!hasMore) moreWrap.style.display = 'none';
