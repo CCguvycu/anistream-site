@@ -9,25 +9,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     .movies-hero {
-      width: 100%; padding: 3rem 0 2rem;
-      text-align: center;
-      background: linear-gradient(to bottom, rgba(168,85,247,0.08) 0%, transparent 100%);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2rem;
+      position: relative; width: 100%; height: 320px; overflow: hidden; margin-top: 62px;
     }
-    .movies-hero h1 {
-      font-size: 2rem; font-weight: 800; letter-spacing: -0.5px;
-      background: var(--grad); -webkit-background-clip: text;
-      background-clip: text; -webkit-text-fill-color: transparent;
+    .movies-hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center 25%;
     }
-    .movies-hero p { color: var(--muted); font-size: 0.88rem; margin-top: 0.4rem; }
+    .movies-hero-shade {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(9,9,15,0.96) 30%, rgba(9,9,15,0.5) 70%, transparent 100%),
+                  linear-gradient(to top, rgba(9,9,15,1) 0%, transparent 50%);
+    }
+    .movies-hero-content {
+      position: absolute; bottom: 2rem; left: 2.5rem; max-width: 460px;
+    }
+    .movies-hero-label {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--purple-lt); text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+    .movies-hero-title {
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 800;
+      line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 0.6rem;
+    }
+    .movies-hero-meta {
+      font-size: 0.82rem; color: var(--muted); display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+    .movies-hero-score { color: var(--gold); font-weight: 700; }
 
     .filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
     .filter-btn {
-      padding: 0.4rem 1.1rem; border-radius: 100px;
-      font-size: 0.8rem; font-weight: 600;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--muted); cursor: pointer; transition: all var(--t);
+      padding: 0.4rem 1.1rem; border-radius: 100px; font-size: 0.8rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--card); color: var(--muted);
+      cursor: pointer; transition: all var(--t);
     }
     .filter-btn:hover  { border-color: var(--purple); color: var(--text); }
     .filter-btn.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
@@ -50,13 +63,20 @@
   </div>
 </nav>
 
-<div class="page">
-  <div class="movies-hero">
-    <h1>Anime Movies</h1>
-    <p>Feature films, standalone specials, and cinematic releases</p>
+<!-- Hero — populated by JS with a featured movie -->
+<div class="movies-hero" id="moviesHero">
+  <div class="movies-hero-bg" id="heroMovieBg"></div>
+  <div class="movies-hero-shade"></div>
+  <div class="movies-hero-content">
+    <div class="movies-hero-label">🎬 Featured Film</div>
+    <div class="movies-hero-title" id="heroMovieTitle">Loading…</div>
+    <div class="movies-hero-meta" id="heroMovieMeta"></div>
   </div>
+</div>
 
-  <div class="section">
+<div class="page">
+  <div class="section" style="padding-top:1.5rem">
+
     <div class="filter-bar" id="filterBar">
       <button class="filter-btn active" data-sort="POPULARITY_DESC">Popular</button>
       <button class="filter-btn" data-sort="SCORE_DESC">Top Rated</button>
@@ -69,39 +89,7 @@
     <div id="moreWrap" style="text-align:center;margin-top:2.5rem;display:none">
       <button class="btn btn-ghost" id="moreBtn">Load More</button>
     </div>
-  </div>
-</div>
 
-<style>
-  .dev-banner {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
-    z-index: 9999; display: flex; align-items: center; justify-content: center;
-  }
-  .dev-modal {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--r-lg); padding: 2.5rem 2rem;
-    max-width: 420px; width: 90%; text-align: center;
-    box-shadow: var(--shadow);
-  }
-  .dev-modal-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-  .dev-modal-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
-  .dev-modal-body { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
-  .dev-modal-btns { display: flex; gap: 0.75rem; justify-content: center; }
-</style>
-
-<div class="dev-banner" id="devBanner">
-  <div class="dev-modal">
-    <div class="dev-modal-icon">🚧</div>
-    <div class="dev-modal-title">Under Development</div>
-    <div class="dev-modal-body">
-      The Movies page is currently being built.<br>
-      Some features may be incomplete or change soon.
-    </div>
-    <div class="dev-modal-btns">
-      <button class="btn btn-primary" onclick="document.getElementById('devBanner').remove()">Got it, continue</button>
-      <a href="index.html" class="btn btn-ghost">Go Home</a>
-    </div>
   </div>
 </div>
 
@@ -111,15 +99,14 @@
     Page(page:$p,perPage:24){
       pageInfo{ hasNextPage }
       media(type:ANIME,format:MOVIE,sort:$sort,averageScore_greater:1){
-        id title{romaji english} coverImage{extraLarge large}
-        duration status averageScore genres season seasonYear format
+        id title{romaji english} coverImage{extraLarge large} bannerImage
+        duration status averageScore genres season seasonYear format description(asHtml:false)
       }
     }
   }`;
 
   let currentSort = 'POPULARITY_DESC';
-  let page = 1;
-  let loading = false;
+  let page = 1, loading = false;
 
   const grid     = $('#movieGrid');
   const moreWrap = $('#moreWrap');
@@ -130,27 +117,42 @@
     return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
   }
 
+  function setHero(a) {
+    const bg = $('#heroMovieBg');
+    bg.style.backgroundImage = `url('${a.bannerImage || a.coverImage?.extraLarge || ''}')`;
+    $('#heroMovieTitle').textContent = a.title.english || a.title.romaji;
+    const score = a.averageScore ? `<span class="movies-hero-score">★ ${fmt.score(a.averageScore)}</span>` : '';
+    const yr    = a.seasonYear ? `<span>${a.seasonYear}</span>` : '';
+    const dur   = a.duration   ? `<span>${a.duration} min</span>` : '';
+    $('#heroMovieMeta').innerHTML = [score, yr, dur].filter(Boolean).join('<span style="color:var(--dim)">·</span>');
+    $('#moviesHero').style.cursor = 'pointer';
+    $('#moviesHero').onclick = () => P.go('anime.html', { id: a.id });
+  }
+
   async function load(sort) {
-    currentSort = sort;
-    page = 1;
+    currentSort = sort; page = 1;
     moreWrap.style.display = 'none';
     skels(grid, 24);
+
     const { items, hasMore } = await fetchMovies(1);
     grid.innerHTML = '';
+
     if (!items.length) {
-      grid.innerHTML = `<div class="empty"><div class="empty-icon">🎬</div>
-        <div class="empty-title">No movies found</div></div>`;
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">🎬</div><div class="empty-title">No movies found</div></div>`;
       return;
     }
+
+    // Featured hero — pick highest scored with a banner
+    const featured = items.find(a => a.bannerImage) || items[0];
+    setHero(featured);
+
     items.forEach(a => grid.appendChild(card(a)));
     if (hasMore) moreWrap.style.display = 'block';
   }
 
   async function loadMore() {
     if (loading) return;
-    loading = true;
-    moreBtn.textContent = 'Loading…';
-    moreBtn.disabled = true;
+    loading = true; moreBtn.textContent = 'Loading…'; moreBtn.disabled = true;
     page++;
     const { items, hasMore } = await fetchMovies(page);
     items.forEach(a => grid.appendChild(card(a)));
@@ -170,11 +172,7 @@
   moreBtn.addEventListener('click', loadMore);
 
   load('POPULARITY_DESC').catch(err => {
-    grid.innerHTML = `<div class="empty">
-      <div class="empty-icon">⚠️</div>
-      <div class="empty-title">Failed to load</div>
-      <div class="empty-body">${err.message}</div>
-    </div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Failed to load</div><div class="empty-body">${err.message}</div></div>`;
   });
 </script>
 </body>
