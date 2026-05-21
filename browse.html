@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse — AniStream</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+
+    .browse-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 50px;
+      background: rgba(9,9,15,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 1.25rem; gap: 1rem;
+    }
+
+    .browse-logo {
+      font-size: 1.1rem; font-weight: 800;
+      background: var(--grad); -webkit-background-clip: text;
+      background-clip: text; -webkit-text-fill-color: transparent;
+      white-space: nowrap; text-decoration: none;
+    }
+
+    .src-pills { display: flex; gap: 0.35rem; }
+    .src-pill {
+      padding: 0.25rem 0.75rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); cursor: pointer; transition: all var(--t);
+    }
+    .src-pill:hover  { border-color: var(--purple); color: var(--text); }
+    .src-pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+
+    .browse-frame {
+      position: fixed;
+      top: 50px; left: 0; right: 0; bottom: 0;
+      border: none; width: 100%; height: calc(100% - 50px);
+    }
+
+    .sep { width: 1px; height: 22px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+  <div class="browse-bar">
+    <a href="index.html" class="browse-logo">⟐ AniStream</a>
+    <div class="sep"></div>
+    <div class="src-pills" id="pills"></div>
+    <div class="sep"></div>
+    <a href="index.html" style="font-size:0.75rem;color:var(--muted)">← Home</a>
+    <a href="watchlist.html" style="font-size:0.75rem;color:var(--muted);margin-left:0.5rem">My List</a>
+  </div>
+
+  <iframe class="browse-frame" id="frame"
+    allowfullscreen
+    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>
+
+<script src="app.js"></script>
+<script>
+  const SITES = [
+    { name: 'Animetsu', url: 'https://animetsu.cc/home' },
+    { name: 'AnimeLok', url: 'https://animelok.online/home' },
+  ];
+
+  let current = 0;
+  const frame = $('#frame');
+  const pills = $('#pills');
+
+  function loadSite(i) {
+    current = i;
+    frame.src = SITES[i].url;
+    $$('.src-pill').forEach((p, j) => p.classList.toggle('active', j === i));
+    document.title = `${SITES[i].name} — AniStream`;
+  }
+
+  SITES.forEach((s, i) => {
+    const p = mk('button', `src-pill${i === 0 ? ' active' : ''}`, s.name);
+    p.addEventListener('click', () => loadSite(i));
+    pills.appendChild(p);
+  });
+
+  loadSite(0);
+</script>
+</body>
+</html>
