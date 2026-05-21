@@ -142,7 +142,10 @@
       btn.classList.toggle('saved', nowSaved);
       toast(nowSaved ? 'Added to My List' : 'Removed from My List');
     });
-    c.addEventListener('click', () => location.href = 'browse.html');
+    c.addEventListener('click', () => {
+      const t = encodeURIComponent(a.title.english || a.title.romaji);
+      location.href = `browse.html?q=${t}`;
+    });
     return c;
   }
 
@@ -160,7 +163,8 @@
     const dur   = a.duration   ? `<span>${a.duration} min</span>` : '';
     $('#heroMovieMeta').innerHTML = [score, yr, dur].filter(Boolean).join('<span style="color:var(--dim)">·</span>');
     $('#moviesHero').style.cursor = 'default';
-    $('#heroWatchBtn').onclick = () => location.href = 'browse.html';
+    const t = encodeURIComponent(a.title.english || a.title.romaji);
+    $('#heroWatchBtn').onclick = () => location.href = `browse.html?q=${t}`;
   }
 
   async function load(sort) {

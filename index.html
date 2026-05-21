@@ -227,6 +227,26 @@
     items.forEach(a => el.appendChild(showcaseCard(a)));
   }
 
+  // ── sessionStorage cache (5 min TTL) ──
+  const CACHE_TTL = 5 * 60 * 1000;
+  function cacheGet(key) {
+    try {
+      const e = JSON.parse(sessionStorage.getItem(key));
+      if (e && Date.now() - e.ts < CACHE_TTL) return e.data;
+    } catch {}
+    return null;
+  }
+  function cacheSet(key, data) {
+    try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+  }
+  async function cachedGql(key, query, vars) {
+    const hit = cacheGet(key);
+    if (hit) return hit;
+    const data = await gql(query, vars);
+    cacheSet(key, data);
+    return data;
+  }
+
   async function init() {
     // Genre bar
     const bar = $('#genreBar');
@@ -236,32 +256,32 @@
       bar.appendChild(a);
     });
 
-    // Season label
     const season = currentSeason();
     const year   = new Date().getFullYear();
     $('#seasonLabel').textContent = `${SEASON_ICONS[season]} ${season[0]}${season.slice(1).toLowerCase()} ${year}`;
 
-    // Skeleton loaders
     ['seasonRow','newRow','trendingRow','popularRow','topRatedRow'].forEach(id => skels($(`#${id}`), 12));
 
-    const [seasonal, newRel, trending, popular, topRated] = await Promise.all([
-      gql(Q.seasonal,    { season, year }),
-      gql(Q.newReleases),
-      gql(Q.trending),
-      gql(Q.popular),
-      gql(Q.topRated),
-    ]);
-
+    // Load hero + trending first for fast above-the-fold render
+    const trending = await cachedGql('trending', Q.trending);
     heroAnime = trending.Page.media.filter(a => a.bannerImage || a.coverImage?.extraLarge).slice(0, 5);
     if (heroAnime.length) {
       setHero(heroAnime[0]);
       buildDots(heroAnime.length);
       heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
     }
+    fillRow($('#trendingRow'), trending.Page.media);
+
+    // Load remaining rows in parallel after hero is painted
+    const [seasonal, newRel, popular, topRated] = await Promise.all([
+      cachedGql(`seasonal-${season}-${year}`, Q.seasonal, { season, year }),
+      cachedGql('newReleases', Q.newReleases),
+      cachedGql('popular', Q.popular),
+      cachedGql('topRated', Q.topRated),
+    ]);
 
     fillRow($('#seasonRow'),   seasonal.Page.media);
     fillRow($('#newRow'),      newRel.Page.media);
-    fillRow($('#trendingRow'), trending.Page.media);
     fillRow($('#popularRow'),  popular.Page.media);
     fillRow($('#topRatedRow'), topRated.Page.media);
   }

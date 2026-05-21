@@ -142,13 +142,22 @@
     select.appendChild(opt);
   });
 
+  const searchQuery = new URLSearchParams(location.search).get('q');
+
   function loadSite(i) {
     frame.src = SITES[i].url;
     document.title = `${SITES[i].name} — AnimeWeb`;
   }
 
   select.addEventListener('change', () => loadSite(parseInt(select.value)));
-  loadSite(0);
+
+  if (searchQuery) {
+    // Deep link: load Animetsu search for the query
+    frame.src = `https://animetsu.cc/browse?query=${encodeURIComponent(searchQuery)}`;
+    document.title = `Search: ${searchQuery} — AnimeWeb`;
+  } else {
+    loadSite(0);
+  }
 </script>
 </body>
 </html>
