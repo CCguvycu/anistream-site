@@ -8,173 +8,228 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    html, body { height: 100%; overflow: hidden; }
-    .top-bar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
-      height: 54px;
-      background: rgba(9,9,15,0.96);
-      backdrop-filter: blur(18px);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center;
-      padding: 0 1.5rem; gap: 1.25rem;
+    /* ── Hero Banner ── */
+    .hero {
+      position: relative; width: 100%;
+      height: 520px; overflow: hidden;
+      margin-top: 62px;
     }
-    .top-logo {
-      font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;
-      background: var(--grad); -webkit-background-clip: text;
-      background-clip: text; -webkit-text-fill-color: transparent;
-      text-decoration: none; white-space: nowrap;
-      display: flex; align-items: center; gap: 8px;
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center 20%;
+      transition: opacity 0.6s ease;
     }
-    .top-logo img { -webkit-text-fill-color: initial; }
-    .top-nav { display: flex; gap: 1rem; align-items: center; }
-    .top-nav a {
-      font-size: 0.85rem; font-weight: 500; color: var(--muted);
-      text-decoration: none; transition: color var(--t);
+    .hero-shade {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(9,9,15,0.95) 30%, rgba(9,9,15,0.4) 70%, transparent 100%),
+                  linear-gradient(to top, rgba(9,9,15,1) 0%, transparent 40%);
     }
-    .top-nav a:hover { color: var(--text); }
-    .src-select {
-      background: var(--card); border: 1px solid var(--border);
-      color: var(--text); border-radius: 100px;
-      padding: 0.3rem 2rem 0.3rem 0.85rem;
-      font-size: 0.78rem; font-weight: 600;
-      cursor: pointer; outline: none;
-      appearance: none; -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.7rem center;
-      transition: border-color var(--t);
+    .hero-content {
+      position: absolute; bottom: 2.5rem; left: 2.5rem;
+      max-width: 480px;
     }
-    .src-select:hover, .src-select:focus { border-color: var(--purple); }
-    .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-    .top-search { flex: 1; max-width: 340px; margin-left: auto; position: relative; }
-    .top-search input {
-      width: 100%; background: var(--card); border: 1px solid var(--border);
-      border-radius: 100px; padding: 0.42rem 1rem 0.42rem 2.2rem;
-      color: var(--text); font-size: 0.82rem; outline: none; transition: border-color var(--t);
+    .hero-genres { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    .hero-genre {
+      font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.65rem;
+      border-radius: 100px; background: rgba(168,85,247,0.18);
+      border: 1px solid rgba(168,85,247,0.35); color: var(--purple-lt);
     }
-    .top-search input:focus { border-color: var(--purple); }
-    .top-search input::placeholder { color: var(--dim); }
-    .top-search .si { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--dim); font-size: 0.78rem; }
-    .search-drop { position: absolute; top: calc(100% + 8px); left: 0; right: 0;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--r); overflow: hidden; display: none; z-index: 200; box-shadow: var(--shadow); }
-    .search-drop.open { display: block; }
-    .sdrop-item { display: flex; align-items: center; gap: 0.7rem;
-      padding: 0.65rem 1rem; cursor: pointer; transition: background var(--t); }
-    .sdrop-item:hover { background: var(--card-hover); }
-    .sdrop-item img { width: 38px; height: 54px; object-fit: cover; border-radius: var(--r-sm); flex-shrink: 0; }
-    .sdrop-title { font-size: 0.82rem; font-weight: 600; }
-    .sdrop-meta  { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
-    .site-frame {
-      position: fixed; top: 54px; left: 0; right: 0; bottom: 0;
-      width: 100%; height: calc(100% - 54px); border: none;
+    .hero-title {
+      font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800;
+      line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 0.65rem;
+    }
+    .hero-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.9rem; display: flex; gap: 1rem; align-items: center; }
+    .hero-score { color: var(--gold); font-weight: 700; }
+    .hero-desc {
+      font-size: 0.85rem; color: var(--muted); line-height: 1.6;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .hero-btns { display: flex; gap: 0.75rem; }
+    .hero-dots {
+      position: absolute; bottom: 1.25rem; right: 2rem;
+      display: flex; gap: 0.4rem;
+    }
+    .hero-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.25); cursor: pointer;
+      transition: all var(--t);
+    }
+    .hero-dot.on { background: var(--purple); width: 20px; border-radius: 3px; }
+
+    /* ── Sections ── */
+    .home-wrap { padding: 2rem 2rem 4rem; max-width: 1400px; margin: 0 auto; }
+    .section-row { margin-bottom: 2.5rem; }
+    .section-row-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.1rem;
+    }
+    .section-row-title { font-size: 1.05rem; font-weight: 700; }
+    .section-row-more {
+      font-size: 0.78rem; color: var(--muted); font-weight: 500;
+      transition: color var(--t);
+    }
+    .section-row-more:hover { color: var(--purple); }
+
+    /* ── Horizontal scroll row ── */
+    .card-row {
+      display: flex; gap: 0.85rem;
+      overflow-x: auto; padding-bottom: 0.5rem;
+      scrollbar-width: none;
+    }
+    .card-row::-webkit-scrollbar { display: none; }
+    .card-row .acard {
+      flex: 0 0 148px; width: 148px;
     }
   </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <a href="index.html" class="top-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
-  <div class="sep"></div>
-  <select class="src-select" id="siteSelect"></select>
-  <div class="sep"></div>
-  <nav class="top-nav">
-    <a href="movies.html">Movies</a>
-    <a href="watchlist.html">My List</a>
-  </nav>
-  <div class="top-search">
-    <span class="si">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime…">
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="movies.html">Movies</a></li>
+    <li><a href="watchlist.html">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+  </ul>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime...">
     <div class="search-drop" id="searchDrop"></div>
   </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-shade"></div>
+  <div class="hero-content" id="heroContent">
+    <div class="hero-genres" id="heroGenres"></div>
+    <div class="hero-title" id="heroTitle">Loading…</div>
+    <div class="hero-meta" id="heroMeta"></div>
+    <div class="hero-desc" id="heroDesc"></div>
+    <div class="hero-btns">
+      <button class="btn btn-primary" id="heroWatch">▶ Watch Now</button>
+      <button class="btn btn-ghost" id="heroInfo">Info</button>
+    </div>
+  </div>
+  <div class="hero-dots" id="heroDots"></div>
 </div>
 
-<iframe class="site-frame" id="frame" allowfullscreen
-  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>
+<!-- CONTENT -->
+<div class="home-wrap">
+
+  <!-- Trending -->
+  <div class="section-row">
+    <div class="section-row-head">
+      <span class="section-row-title">🔥 Trending Now</span>
+      <a href="search.html?sort=TRENDING_DESC" class="section-row-more">See all →</a>
+    </div>
+    <div class="card-row" id="trendingRow"></div>
+  </div>
+
+  <!-- Popular -->
+  <div class="section-row">
+    <div class="section-row-head">
+      <span class="section-row-title">⭐ Most Popular</span>
+      <a href="search.html?sort=POPULARITY_DESC" class="section-row-more">See all →</a>
+    </div>
+    <div class="card-row" id="popularRow"></div>
+  </div>
+
+  <!-- Top Rated -->
+  <div class="section-row">
+    <div class="section-row-head">
+      <span class="section-row-title">🏆 Top Rated</span>
+      <a href="search.html?sort=SCORE_DESC" class="section-row-more">See all →</a>
+    </div>
+    <div class="card-row" id="topRatedRow"></div>
+  </div>
+
+</div>
 
 <script src="app.js"></script>
 <script>
-  // All confirmed embeddable (no X-Frame-Options) — 56 sites tested 2026-05-21
-  const SITES = [
-    { name: 'Animetsu',        home: 'https://animetsu.cc/home' },
-    { name: 'AnimeLok',        home: 'https://animelok.online/home' },
-    { name: 'aniwave',         home: 'https://aniwave.to/home' },
-    { name: 'AllManga',        home: 'https://allmanga.to/' },
-    { name: 'AniHQ',           home: 'https://anihq.to/' },
-    { name: 'AnimeRealms',     home: 'https://www.animerealms.org/' },
-    { name: 'Lunar',           home: 'https://lunaranime.ru/' },
-    { name: 'AniZone',         home: 'https://anizone.to/' },
-    { name: 'Anistream',       home: 'https://anistream.one/' },
-    { name: 'AniKuro',         home: 'https://anikuro.to/' },
-    { name: 'AnimeParadise',   home: 'https://www.animeparadise.moe/' },
-    { name: 'Rive',            home: 'https://www.rivestream.app/' },
-    { name: 'AnimeHub',        home: 'https://animehub.ac/' },
-    { name: 'Anidap',          home: 'https://anidap.se/' },
-    { name: 'AnimeOnsen',      home: 'https://animeonsen.xyz/' },
-    { name: 'FireAnime',       home: 'https://fireani.me/' },
-    { name: 'JustAnime',       home: 'https://justanime.to/' },
-    { name: 'Enma',            home: 'https://www.enma.lol/' },
-    { name: 'Senshi',          home: 'https://senshi.live/' },
-    { name: 'yugen',           home: 'https://yugen.to/' },
-    { name: '1anime',          home: 'https://1ani.me/' },
-    { name: 'AniPlay',         home: 'https://aniplay.to/' },
-    { name: 'AnimeKhor',       home: 'https://animekhor.org/' },
-    { name: 'KayoAnime',       home: 'https://kayoanime.com/' },
-    { name: 'AnimeSilo',       home: 'https://animesilo.cc/' },
-    { name: 'AnimeNoSub',      home: 'https://animenosub.to/' },
-    { name: 'Kiroku',          home: 'https://kiroku.my/' },
-    { name: 'ReAnime',         home: 'https://reanime.to/' },
-    { name: 'AniDoor',         home: 'https://anidoor.me/' },
-    { name: 'AnimeXin',        home: 'https://animexin.dev/' },
-    { name: 'LMAnime',         home: 'https://lmanime.com/' },
-    { name: 'CKSub',           home: 'https://cksub.org/' },
-    { name: 'MyAnime',         home: 'https://myanime.live/' },
-    { name: 'Anoboye',         home: 'https://anoboye.com/' },
-    { name: 'Yomi',            home: 'https://yomi.to/' },
-    { name: 'KissAnime',       home: 'https://kissanime.com.ru/' },
-    { name: 'AnimeHub.io',     home: 'https://animehub.io/' },
-    { name: 'WCOStream',       home: 'https://wcostream.cc/' },
-    { name: 'AnimeDAO',        home: 'https://animedao.to/' },
-    { name: 'AnimeOnline360',  home: 'https://animeonline360.com/' },
-    { name: 'AnimeFLV',        home: 'https://animeflv.net/' },
-    { name: 'GogoAnimes',      home: 'https://gogoanimes.fi/' },
-    { name: 'AnimeRush',       home: 'https://animerush.tv/' },
-    { name: 'AnimeFreak',      home: 'https://animefreak.tv/' },
-    { name: 'GenoAnime',       home: 'https://genoanime.com/' },
-    { name: 'AnimeOwl',        home: 'https://animeowl.live/' },
-    { name: 'Marin',           home: 'https://marin.moe/' },
-    { name: 'AnimeFever',      home: 'https://animefever.cc/' },
-    { name: 'BestDubAnime',    home: 'https://bestdubbedanime.com/' },
-    { name: 'AnimeLatino',     home: 'https://animelatino.net/' },
-    { name: 'VostFree',        home: 'https://vostfree.ws/' },
-    { name: 'aniwave.live',    home: 'https://aniwave.live/' },
-    { name: 'Animes.Vision',   home: 'https://animes.vision/' },
-    { name: 'OtakuStream',     home: 'https://otakustream.com/' },
-    { name: 'GogoAnime',       home: 'https://gogoanime.by/' },
-    { name: 'AnimeLand',       home: 'https://w7.animeland.tv/' },
-    { name: 'KawaiiAnime',     home: 'https://kawaii-anime.com/' },
-    { name: 'LuciferDonghua',  home: 'https://luciferdonghua.in/' },
-    { name: 'AnimeStream',     home: 'https://anime.uniquestream.net/' },
-    { name: 'AnimeSaturn',     home: 'https://animesaturn.cx/' },
-  ];
+  // ── Hero ──
+  let heroAnime = [];
+  let heroIdx = 0;
+  let heroTimer;
 
-  const frame  = $('#frame');
-  const select = $('#siteSelect');
+  function setHero(a) {
+    const bg    = $('#heroBg');
+    const title = $('#heroTitle');
+    const meta  = $('#heroMeta');
+    const desc  = $('#heroDesc');
+    const genres = $('#heroGenres');
 
-  SITES.forEach((s, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = s.name;
-    select.appendChild(opt);
-  });
+    bg.style.backgroundImage = `url('${a.bannerImage || a.coverImage?.extraLarge || ''}')`;
+    title.textContent = a.title.english || a.title.romaji;
+    desc.textContent  = fmt.plain(a.description || '');
 
-  function load(i) {
-    frame.src = SITES[i].home;
-    document.title = `AnimeWeb — ${SITES[i].name}`;
+    const score = a.averageScore ? `<span class="hero-score">★ ${fmt.score(a.averageScore)}</span>` : '';
+    const eps   = a.episodes ? `${a.episodes} eps` : '';
+    const yr    = a.seasonYear || '';
+    meta.innerHTML = [score, eps, yr].filter(Boolean).join('<span style="color:var(--dim)">·</span>');
+
+    genres.innerHTML = (a.genres || []).slice(0, 4)
+      .map(g => `<span class="hero-genre">${g}</span>`).join('');
+
+    $('#heroWatch').onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
+    $('#heroInfo').onclick  = () => P.go('anime.html', { id: a.id });
   }
 
-  select.addEventListener('change', () => load(parseInt(select.value)));
-  load(0);
+  function buildDots(n) {
+    const el = $('#heroDots');
+    el.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const d = mk('div', `hero-dot${i === 0 ? ' on' : ''}`);
+      d.addEventListener('click', () => cycleHero(i));
+      el.appendChild(d);
+    }
+  }
+
+  function cycleHero(i) {
+    heroIdx = i;
+    setHero(heroAnime[i]);
+    $$('.hero-dot').forEach((d, j) => d.classList.toggle('on', j === i));
+    clearInterval(heroTimer);
+    heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
+  }
+
+  // ── Rows ──
+  function fillRow(el, items) {
+    el.innerHTML = '';
+    items.forEach(a => el.appendChild(card(a)));
+  }
+
+  async function init() {
+    skels($('#trendingRow'), 12);
+    skels($('#popularRow'), 12);
+    skels($('#topRatedRow'), 12);
+
+    const [trending, popular, topRated] = await Promise.all([
+      gql(Q.trending),
+      gql(Q.popular),
+      gql(Q.topRated),
+    ]);
+
+    // Hero — pick top 5 trending with a banner image
+    heroAnime = trending.Page.media.filter(a => a.bannerImage || a.coverImage?.extraLarge).slice(0, 5);
+    if (heroAnime.length) {
+      setHero(heroAnime[0]);
+      buildDots(heroAnime.length);
+      heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
+    }
+
+    fillRow($('#trendingRow'),  trending.Page.media);
+    fillRow($('#popularRow'),   popular.Page.media);
+    fillRow($('#topRatedRow'),  topRated.Page.media);
+  }
+
+  init().catch(console.error);
 </script>
 </body>
 </html>
