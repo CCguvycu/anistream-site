@@ -5,190 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AniStream — Watch Anime Free</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 54px;
+      background: rgba(9,9,15,0.96);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 1.5rem; gap: 1.25rem;
+    }
+    .top-logo {
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;
+      background: var(--grad); -webkit-background-clip: text;
+      background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none; white-space: nowrap;
+    }
+    .top-nav { display: flex; gap: 1rem; align-items: center; }
+    .top-nav a {
+      font-size: 0.85rem; font-weight: 500; color: var(--muted);
+      text-decoration: none; transition: color var(--t);
+    }
+    .top-nav a:hover { color: var(--text); }
+    .src-pills { display: flex; gap: 0.35rem; }
+    .src-pill {
+      padding: 0.25rem 0.7rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); cursor: pointer; transition: all var(--t);
+    }
+    .src-pill:hover  { border-color: var(--purple); color: var(--text); }
+    .src-pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+    .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+    .top-search { flex: 1; max-width: 340px; margin-left: auto; position: relative; }
+    .top-search input {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      border-radius: 100px; padding: 0.42rem 1rem 0.42rem 2.2rem;
+      color: var(--text); font-size: 0.82rem; outline: none; transition: border-color var(--t);
+    }
+    .top-search input:focus { border-color: var(--purple); }
+    .top-search input::placeholder { color: var(--dim); }
+    .top-search .si { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--dim); font-size: 0.78rem; }
+    .search-drop { position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden; display: none; z-index: 200; box-shadow: var(--shadow); }
+    .search-drop.open { display: block; }
+    .sdrop-item { display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.65rem 1rem; cursor: pointer; transition: background var(--t); }
+    .sdrop-item:hover { background: var(--card-hover); }
+    .sdrop-item img { width: 38px; height: 54px; object-fit: cover; border-radius: var(--r-sm); flex-shrink: 0; }
+    .sdrop-title { font-size: 0.82rem; font-weight: 600; }
+    .sdrop-meta  { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
+    .site-frame {
+      position: fixed; top: 54px; left: 0; right: 0; bottom: 0;
+      width: 100%; height: calc(100% - 54px); border: none;
+    }
+  </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-  <a href="index.html" class="nav-logo">⟐ AniStream</a>
-  <ul class="nav-links">
-    <li><a href="index.html" class="active">Home</a></li>
-    <li><a href="watchlist.html">My List</a></li>
-    <li><a href="browse.html">Browse Free</a></li>
-    <li><a href="search.html?genre=Action">Action</a></li>
-    <li><a href="search.html?genre=Romance">Romance</a></li>
-    <li><a href="search.html?genre=Fantasy">Fantasy</a></li>
-    <li><a href="search.html?genre=Sci-Fi">Sci-Fi</a></li>
-    <li><a href="search.html?sort=SCORE_DESC">Top Rated</a></li>
-  </ul>
-  <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime...">
+<div class="top-bar">
+  <a href="index.html" class="top-logo">⟐ AniStream</a>
+  <div class="sep"></div>
+  <div class="src-pills" id="pills"></div>
+  <div class="sep"></div>
+  <nav class="top-nav">
+    <a href="watchlist.html">My List</a>
+  </nav>
+  <div class="top-search">
+    <span class="si">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime…">
     <div class="search-drop" id="searchDrop"></div>
   </div>
-</nav>
-
-<div class="page">
-
-  <!-- HERO -->
-  <div class="hero" id="hero">
-    <div class="hero-bg" id="heroBg"></div>
-    <div class="hero-shade"></div>
-    <div class="hero-body" id="heroBody">
-      <div class="skel" style="width:82px;height:22px;border-radius:100px;margin-bottom:0.9rem"></div>
-      <div class="skel" style="width:65%;height:48px;margin-bottom:0.9rem"></div>
-      <div class="skel" style="width:90%;height:56px;margin-bottom:1.4rem"></div>
-      <div style="display:flex;gap:0.65rem">
-        <div class="skel" style="width:130px;height:42px;border-radius:12px"></div>
-        <div class="skel" style="width:110px;height:42px;border-radius:12px"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONTINUE WATCHING -->
-  <section class="section" id="continueSection" style="display:none">
-    <div class="section-head">
-      <h2 class="section-title">Continue Watching</h2>
-    </div>
-    <div class="scroll" id="continueScroll"></div>
-  </section>
-
-  <!-- TRENDING -->
-  <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Trending Now</h2>
-      <a href="search.html?sort=TRENDING_DESC" class="see-all">See all →</a>
-    </div>
-    <div class="scroll" id="trendScroll"></div>
-  </section>
-
-  <!-- POPULAR -->
-  <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">All Time Popular</h2>
-      <a href="search.html?sort=POPULARITY_DESC" class="see-all">See all →</a>
-    </div>
-    <div class="scroll" id="popScroll"></div>
-  </section>
-
-  <!-- TOP RATED -->
-  <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Top Rated</h2>
-      <a href="search.html?sort=SCORE_DESC" class="see-all">See all →</a>
-    </div>
-    <div class="grid" id="topGrid"></div>
-  </section>
-
 </div>
+
+<iframe class="site-frame" id="frame" allowfullscreen
+  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>
 
 <script src="app.js"></script>
 <script>
-  const trendEl  = $('#trendScroll');
-  const popEl    = $('#popScroll');
-  const topEl    = $('#topGrid');
+  const SITES = [
+    { name: 'Animetsu', home: 'https://animetsu.cc/home' },
+    { name: 'AnimeLok', home: 'https://animelok.online/home' },
+  ];
 
-  // Initial skeletons
-  skels(trendEl, 10);
-  skels(popEl,   10);
-  skels(topEl,   20);
+  let cur = 0;
+  const frame  = $('#frame');
+  const pills  = $('#pills');
 
-  // Continue watching (from localStorage)
-  function loadContinue() {
-    const h = S.history();
-    if (!h.length) return;
-    $('#continueSection').style.display = 'block';
-    const wrap = $('#continueScroll');
-    wrap.innerHTML = '';
-    h.slice(0, 12).forEach(item => {
-      const c = mk('div', 'acard');
-      c.style.cssText = 'flex:0 0 155px;height:220px';
-      c.innerHTML = `
-        <img src="${item.img||''}" alt="" loading="lazy" onerror="this.style.display='none'">
-        <div class="acard-info">
-          <div class="acard-title">${item.title}</div>
-          <div class="acard-meta" style="color:var(--purple-lt)">Ep ${item.ep}</div>
-        </div>
-        <div class="acard-play">▶</div>`;
-      c.addEventListener('click', () => P.go('watch.html', { id: item.id, ep: item.ep }));
-      wrap.appendChild(c);
-    });
+  function load(i) {
+    cur = i;
+    frame.src = SITES[i].home;
+    $$('.src-pill').forEach((p, j) => p.classList.toggle('active', j === i));
+    document.title = `AniStream — ${SITES[i].name}`;
   }
 
-  // Hero renderer
-  function renderHero(anime) {
-    const bg = anime.bannerImage || anime.coverImage?.extraLarge;
-    if (bg) $('#heroBg').style.backgroundImage = `url('${bg}')`;
-
-    const title  = anime.title.english || anime.title.romaji;
-    const score  = anime.averageScore ? `<span class="hero-score">★ ${fmt.score(anime.averageScore)}</span>` : '';
-    const genres = (anime.genres || []).slice(0, 4).map(g => `<span class="gtag">${g}</span>`).join('');
-    const desc   = fmt.plain(anime.description || '').slice(0, 220);
-    const eps    = anime.episodes ? `${anime.episodes} Episodes` : 'Ongoing';
-
-    $('#heroBody').innerHTML = `
-      <div class="hero-badge">🔥 Trending</div>
-      <h1 class="hero-title">${title}</h1>
-      <div class="hero-meta">
-        ${score}
-        <span>${fmt.status(anime.status)}</span>
-        <span>${eps}</span>
-      </div>
-      <div class="hero-genres">${genres}</div>
-      <p class="hero-desc">${desc}...</p>
-      <div class="hero-btns">
-        <button class="btn btn-primary" data-id="${anime.id}" data-action="watch">▶ Watch Now</button>
-        <button class="btn btn-ghost"   data-id="${anime.id}" data-action="info">ℹ More Info</button>
-      </div>`;
-
-    // Button clicks
-    $$('[data-action]', $('#heroBody')).forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        if (btn.dataset.action === 'watch') P.go('watch.html', { id: btn.dataset.id, ep: 1 });
-        else P.go('anime.html', { id: btn.dataset.id });
-      });
-    });
-
-    // Click on hero background
-    $('#hero').addEventListener('click', () => P.go('anime.html', { id: anime.id }));
-  }
-
-  // Load all data
-  async function init() {
-    loadContinue();
-
-    const [trendData, popData, topData] = await Promise.all([
-      gql(Q.trending),
-      gql(Q.popular),
-      gql(Q.topRated),
-    ]);
-
-    const trending = trendData.Page.media;
-    const popular  = popData.Page.media;
-    const topRated = topData.Page.media;
-
-    // Hero — pick random from top 5 trending
-    const heroAnime = trending[Math.floor(Math.random() * Math.min(5, trending.length))];
-    if (heroAnime) renderHero(heroAnime);
-
-    // Sections
-    trendEl.innerHTML = '';
-    trending.forEach(a => { const c = card(a); c.style.cssText='flex:0 0 155px;height:220px'; trendEl.appendChild(c); });
-
-    popEl.innerHTML = '';
-    popular.forEach(a => { const c = card(a); c.style.cssText='flex:0 0 155px;height:220px'; popEl.appendChild(c); });
-
-    topEl.innerHTML = '';
-    topRated.forEach(a => topEl.appendChild(card(a)));
-  }
-
-  init().catch(err => {
-    console.error(err);
-    $('#heroBody').innerHTML = `<div style="color:var(--muted)">⚠ Failed to load — check your connection</div>`;
+  SITES.forEach((s, i) => {
+    const p = mk('button', `src-pill${i === 0 ? ' active' : ''}`, s.name);
+    p.addEventListener('click', () => load(i));
+    pills.appendChild(p);
   });
+
+  load(0);
 </script>
 </body>
 </html>
