@@ -131,15 +131,16 @@
         </div>
       </div>
 
-      <!-- Source label -->
+      <!-- Source switcher -->
       <div class="src-bar">
-        <span style="color:var(--purple-lt);font-weight:600">⟐ Animetsu</span>
+        <span>Source:</span>
+        <div id="srcBtnRow" class="pill-row"></div>
       </div>
 
       <!-- Navigation hint -->
       <div class="nav-hint">
-        ⟐ The player opens the streaming site inside this page.
-        Navigate to your episode and press play — all within the same window.
+        ⟐ If the video doesn't load, switch source above.
+        Animetsu loads first — click AnimeLok if it shows an error.
       </div>
 
     </div>
@@ -168,7 +169,12 @@ const SOURCES = [
   {
     name: 'Animetsu',
     color: '#ec4899',
-    url: (id, ep, title) => `https://animetsu.cc/watch/${id}?ep=${ep}`,
+    url: (id, ep) => `https://animetsu.cc/watch/${id}?ep=${ep}`,
+  },
+  {
+    name: 'AnimeLok',
+    color: '#a855f7',
+    url: (id, ep) => `https://animelok.online/watch/${id}?ep=${ep}`,
   },
 ];
 
@@ -182,8 +188,20 @@ let playerActive = false;
 if (!animeId) location.href = 'index.html';
 $('#backLink').href = `anime.html?id=${animeId}`;
 
-// Single source — no switcher needed
-function buildSrcBtns() {}
+function buildSrcBtns() {
+  const row = $('#srcBtnRow');
+  if (!row) return;
+  row.innerHTML = '';
+  SOURCES.forEach((s, i) => {
+    const b = mk('button', `src-btn${i === srcIdx ? ' active' : ''}`, s.name);
+    b.addEventListener('click', () => {
+      srcIdx = i;
+      $$('.src-btn').forEach((x, j) => x.classList.toggle('active', j === i));
+      if (playerActive) loadIframe(i);
+    });
+    row.appendChild(b);
+  });
+}
 
 // Activate player on first click
 function activatePlayer() {
