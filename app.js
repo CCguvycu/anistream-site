@@ -34,9 +34,16 @@ const MF = `
 
 // Query library
 const Q = {
-  trending: `{ Page(page:1,perPage:20){ media(type:ANIME,sort:TRENDING_DESC,status:RELEASING){ ${MF} } } }`,
-  popular:  `{ Page(page:1,perPage:20){ media(type:ANIME,sort:POPULARITY_DESC){ ${MF} } } }`,
-  topRated: `{ Page(page:1,perPage:20){ media(type:ANIME,sort:SCORE_DESC,averageScore_greater:72){ ${MF} } } }`,
+  trending:    `{ Page(page:1,perPage:20){ media(type:ANIME,sort:TRENDING_DESC,status:RELEASING){ ${MF} } } }`,
+  popular:     `{ Page(page:1,perPage:20){ media(type:ANIME,sort:POPULARITY_DESC){ ${MF} } } }`,
+  topRated:    `{ Page(page:1,perPage:20){ media(type:ANIME,sort:SCORE_DESC,averageScore_greater:72){ ${MF} } } }`,
+  newReleases: `{ Page(page:1,perPage:20){ media(type:ANIME,sort:START_DATE_DESC,status:RELEASING){ ${MF} } } }`,
+
+  seasonal: `query($season:MediaSeason,$year:Int){
+    Page(page:1,perPage:20){
+      media(type:ANIME,season:$season,seasonYear:$year,sort:POPULARITY_DESC,status_not:NOT_YET_RELEASED){ ${MF} }
+    }
+  }`,
 
   search: `query($s:String,$p:Int){
     Page(page:$p,perPage:24){
@@ -62,9 +69,12 @@ const Q = {
   detail: `query($id:Int){
     Media(id:$id,type:ANIME){
       ${MF}
+      trailer { id site thumbnail }
       studios(isMain:true){ nodes{ name } }
       nextAiringEpisode{ episode airingAt }
-      streamingEpisodes{ title thumbnail url site }
+      characters(perPage:12,sort:ROLE){
+        nodes{ id name{ full } image{ large } }
+      }
       relations{
         edges{
           relationType
@@ -77,6 +87,15 @@ const Q = {
     }
   }`,
 };
+
+// Current season helper
+function currentSeason() {
+  const m = new Date().getMonth() + 1;
+  if (m <= 3) return 'WINTER';
+  if (m <= 6) return 'SPRING';
+  if (m <= 9) return 'SUMMER';
+  return 'FALL';
+}
 
 // ─── LocalStorage helpers ─────────────────────
 const S = {

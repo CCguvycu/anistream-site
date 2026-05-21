@@ -7,6 +7,58 @@
   <title>Anime — AnimeWeb</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Trailer ── */
+    .trailer-wrap {
+      position: relative; width: 100%; padding-top: 56.25%;
+      border-radius: var(--r-lg); overflow: hidden;
+      background: #000; margin-bottom: 1.75rem;
+      border: 1px solid var(--border);
+    }
+    .trailer-wrap iframe {
+      position: absolute; inset: 0; width: 100%; height: 100%; border: none;
+    }
+
+    /* ── Characters ── */
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 0.75rem; margin-top: 0.75rem;
+    }
+    .char-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.4rem; cursor: default;
+    }
+    .char-card img {
+      width: 70px; height: 70px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--border);
+      background: var(--card);
+    }
+    .char-name {
+      font-size: 0.7rem; font-weight: 600; text-align: center;
+      line-height: 1.3; color: var(--muted);
+    }
+
+    /* ── Relations ── */
+    .rel-row {
+      display: flex; gap: 0.75rem; overflow-x: auto;
+      padding-bottom: 0.5rem; scrollbar-width: none;
+    }
+    .rel-row::-webkit-scrollbar { display: none; }
+    .rel-card {
+      flex: 0 0 110px; cursor: pointer; transition: transform var(--t);
+    }
+    .rel-card:hover { transform: translateY(-3px); }
+    .rel-card img {
+      width: 110px; height: 155px; object-fit: cover;
+      border-radius: var(--r); background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .rel-title { font-size: 0.72rem; font-weight: 600; margin-top: 0.35rem; line-height: 1.3; }
+    .rel-type  { font-size: 0.65rem; color: var(--purple-lt); margin-top: 1px; }
+
+    .section-h { font-size: 1rem; font-weight: 700; margin: 1.75rem 0 0.85rem; }
+  </style>
 </head>
 <body>
 
@@ -27,7 +79,6 @@
 
 <div class="page">
 
-  <!-- BANNER -->
   <div class="banner" id="banner">
     <div id="bannerImg" class="skel" style="width:100%;height:100%"></div>
     <div class="banner-shade"></div>
@@ -35,7 +86,6 @@
 
   <div class="detail-wrap">
 
-    <!-- HEADER -->
     <div class="detail-head" id="detailHead">
       <div class="skel detail-poster"></div>
       <div style="flex:1">
@@ -45,13 +95,11 @@
       </div>
     </div>
 
-    <!-- BODY -->
     <div class="detail-body" id="detailBody">
       <div id="mainCol"></div>
       <div id="sideCol"></div>
     </div>
 
-    <!-- RECOMMENDATIONS -->
     <div id="recsWrap"></div>
 
   </div>
@@ -69,27 +117,25 @@
     document.title = `${a.title.english || a.title.romaji} — AnimeWeb`;
 
     // ── Banner ──
-    const bannerEl = $('#bannerImg');
     const bannerSrc = a.bannerImage || a.coverImage?.extraLarge;
     if (bannerSrc) {
       const img = document.createElement('img');
-      img.src = bannerSrc;
-      img.alt = '';
+      img.src = bannerSrc; img.alt = '';
       img.style.cssText = a.bannerImage ? '' : 'filter:blur(6px);transform:scale(1.06);width:100%;height:100%;object-fit:cover';
-      bannerEl.replaceWith(img);
+      $('#bannerImg').replaceWith(img);
       img.id = 'bannerImg';
     }
 
     // ── Header ──
-    const title = a.title.english || a.title.romaji;
-    const alt   = a.title.english ? a.title.romaji : a.title.native;
-    const genres = (a.genres || []).slice(0, 6).map(g =>
+    const title   = a.title.english || a.title.romaji;
+    const alt     = a.title.english ? a.title.romaji : a.title.native;
+    const genres  = (a.genres || []).slice(0, 6).map(g =>
       `<span class="gchip" onclick="P.go('search.html',{genre:'${g}'})">${g}</span>`
     ).join('');
     const studios = a.studios?.nodes?.map(s => s.name).join(', ') || '—';
-    const prog = S.progress(animeId);
-    const watchLabel = prog.last ? `▶ Continue — Ep ${prog.last}` : '▶ Watch Episode 1';
-    const watchEp    = prog.last || 1;
+    const prog    = S.progress(animeId);
+    const watchEp = prog.last || 1;
+    const watchLabel = prog.last ? `▶ Continue — Ep ${prog.last}` : '▶ Watch';
 
     $('#detailHead').innerHTML = `
       <img class="detail-poster" src="${a.coverImage?.extraLarge || a.coverImage?.large || ''}" alt="${title}" loading="lazy">
@@ -98,27 +144,79 @@
         ${alt ? `<div class="detail-alt">${alt}</div>` : ''}
         <div class="stats">
           ${a.averageScore ? `<div><div class="stat-val gold">★ ${fmt.score(a.averageScore)}</div><div class="stat-key">Score</div></div>` : ''}
-          ${a.episodes ? `<div><div class="stat-val">${a.episodes}</div><div class="stat-key">Episodes</div></div>` : ''}
+          ${a.episodes    ? `<div><div class="stat-val">${a.episodes}</div><div class="stat-key">Episodes</div></div>` : ''}
           <div><div class="stat-val">${fmt.status(a.status)}</div><div class="stat-key">Status</div></div>
           ${a.season ? `<div><div class="stat-val">${fmt.season(a.season, a.seasonYear)}</div><div class="stat-key">Season</div></div>` : ''}
         </div>
         <div class="gchips">${genres}</div>
-        <div style="display:flex;gap:0.65rem;flex-wrap:wrap;margin-top:0.5rem">
+        <div style="display:flex;gap:0.65rem;flex-wrap:wrap;margin-top:0.75rem">
           <button class="btn btn-primary" onclick="P.go('watch.html',{id:${a.id},ep:${watchEp}})">${watchLabel}</button>
+          <button class="btn btn-ghost" id="wlBtn">${S.inWatchlist(animeId) ? '♥ Saved' : '♡ My List'}</button>
         </div>
       </div>`;
 
+    $('#wlBtn').addEventListener('click', () => {
+      S.toggleWatchlist(a);
+      const saved = S.inWatchlist(animeId);
+      $('#wlBtn').textContent = saved ? '♥ Saved' : '♡ My List';
+      toast(saved ? 'Added to My List' : 'Removed from My List');
+    });
+
     // ── Synopsis ──
-    const desc = fmt.plain(a.description || 'No description available.');
+    const desc  = fmt.plain(a.description || 'No description available.');
     const short = desc.length > 420 ? desc.slice(0, 420) + '…' : desc;
 
-    $('#mainCol').innerHTML = `
+    let mainHTML = `
       <div>
-        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.7rem">Synopsis</h3>
+        <h3 class="section-h" style="margin-top:0">Synopsis</h3>
         <p class="synopsis" id="synText">${short}</p>
         ${desc.length > 420 ? `<span class="read-more" id="readMore">Read more ▼</span>` : ''}
-      </div>
-      <div id="epsSection" style="margin-top:1.75rem"></div>`;
+      </div>`;
+
+    // ── Trailer ──
+    if (a.trailer?.id && a.trailer.site === 'youtube') {
+      mainHTML += `
+        <h3 class="section-h">Trailer</h3>
+        <div class="trailer-wrap">
+          <iframe src="https://www.youtube.com/embed/${a.trailer.id}"
+            allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+        </div>`;
+    }
+
+    // ── Episodes ──
+    const totalEps = a.episodes || (a.nextAiringEpisode ? a.nextAiringEpisode.episode - 1 : 0);
+    mainHTML += `<div id="epsSection" style="margin-top:1.75rem"></div>`;
+
+    // ── Characters ──
+    const chars = a.characters?.nodes?.filter(c => c.image?.large) || [];
+    if (chars.length) {
+      mainHTML += `
+        <h3 class="section-h">Characters</h3>
+        <div class="char-grid">${chars.map(c => `
+          <div class="char-card">
+            <img src="${c.image.large}" alt="" loading="lazy" onerror="this.src=''">
+            <div class="char-name">${c.name.full}</div>
+          </div>`).join('')}
+        </div>`;
+    }
+
+    // ── Related ──
+    const related = a.relations?.edges
+      ?.filter(e => e.node.type === 'ANIME' && ['SEQUEL','PREQUEL','SIDE_STORY','PARENT','ALTERNATIVE'].includes(e.relationType))
+      .slice(0, 10) || [];
+    if (related.length) {
+      mainHTML += `
+        <h3 class="section-h">Related</h3>
+        <div class="rel-row">${related.map(e => `
+          <div class="rel-card" onclick="P.go('anime.html',{id:'${e.node.id}'})">
+            <img src="${e.node.coverImage?.large || ''}" alt="" loading="lazy" onerror="this.src=''">
+            <div class="rel-title">${e.node.title.romaji}</div>
+            <div class="rel-type">${e.relationType.replace(/_/g,' ')}</div>
+          </div>`).join('')}
+        </div>`;
+    }
+
+    $('#mainCol').innerHTML = mainHTML;
 
     if (desc.length > 420) {
       $('#readMore').addEventListener('click', () => {
@@ -127,34 +225,24 @@
       });
     }
 
-    // ── Episodes ──
-    const totalEps = a.episodes || (a.nextAiringEpisode ? a.nextAiringEpisode.episode - 1 : 0);
-    const epsEl = $('#epsSection');
-
+    // Episodes grid
     if (totalEps > 0) {
-      const prog = S.progress(animeId);
-      const watched = prog.eps || [];
-      const last    = prog.last;
-
-      epsEl.innerHTML = `
-        <div class="eps-head">
-          <div class="eps-title">Episodes <span style="color:var(--dim);font-weight:400">(${totalEps})</span></div>
-        </div>
+      const p2 = S.progress(animeId);
+      const watched = p2.eps || [], last = p2.last;
+      $('#epsSection').innerHTML = `
+        <div class="eps-head"><div class="eps-title">Episodes <span style="color:var(--dim);font-weight:400">(${totalEps})</span></div></div>
         <div class="ep-grid" id="epGrid"></div>`;
-
       const grid = $('#epGrid');
       for (let i = 1; i <= totalEps; i++) {
-        const cls = `epb${watched.includes(i) ? ' done' : ''}${last === i ? ' cur' : ''}`;
-        const btn = mk('a', cls, String(i));
+        const btn = mk('a', `epb${watched.includes(i) ? ' done' : ''}${last === i ? ' cur' : ''}`, String(i));
         btn.href = `watch.html?id=${animeId}&ep=${i}`;
         grid.appendChild(btn);
       }
     } else {
-      epsEl.innerHTML = `
+      $('#epsSection').innerHTML = `
         <div class="empty">
           <div class="empty-icon">📺</div>
           <div class="empty-title">No episodes yet</div>
-          <div class="empty-body">This anime hasn't aired or episode data is unavailable.</div>
         </div>`;
     }
 
@@ -178,20 +266,17 @@
     // ── Recommendations ──
     const recs = a.recommendations?.nodes
       ?.filter(n => n.mediaRecommendation)
-      .map(n => n.mediaRecommendation)
-      .slice(0, 8);
-
+      .map(n => n.mediaRecommendation).slice(0, 8);
     if (recs?.length) {
       $('#recsWrap').innerHTML = `
         <div class="section" style="padding-left:0;padding-right:0">
-          <div class="section-head"><h2 class="section-title">Recommended</h2></div>
+          <div class="section-head"><h2 class="section-title">You May Also Like</h2></div>
           <div class="scroll" id="recScroll"></div>
         </div>`;
-      const scrl = $('#recScroll');
       recs.forEach(r => {
         const c = card(r);
         c.style.cssText = 'flex:0 0 155px;height:220px';
-        scrl.appendChild(c);
+        $('#recScroll').appendChild(c);
       });
     }
   }
