@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browse — AniStream</title>
+  <title>Browse — AnimeWeb</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -51,7 +51,7 @@
 <body>
 
   <div class="browse-bar">
-    <a href="index.html" class="browse-logo">⟐ AniStream</a>
+    <a href="index.html" class="browse-logo">⟐ AnimeWeb</a>
     <div class="sep"></div>
     <select class="src-select" id="siteSelect"></select>
     <div class="sep"></div>
@@ -141,7 +141,7 @@
 
   function loadSite(i) {
     frame.src = SITES[i].url;
-    document.title = `${SITES[i].name} — AniStream`;
+    document.title = `${SITES[i].name} — AnimeWeb`;
   }
 
   select.addEventListener('change', () => loadSite(parseInt(select.value)));

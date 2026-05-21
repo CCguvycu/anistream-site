@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AniStream — Watch Anime Free</title>
+  <title>AnimeWeb — Watch Anime Free</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -71,7 +71,7 @@
 <body>
 
 <div class="top-bar">
-  <a href="index.html" class="top-logo">⟐ AniStream</a>
+  <a href="index.html" class="top-logo">⟐ AnimeWeb</a>
   <div class="sep"></div>
   <select class="src-select" id="siteSelect"></select>
   <div class="sep"></div>
@@ -167,7 +167,7 @@
 
   function load(i) {
     frame.src = SITES[i].home;
-    document.title = `AniStream — ${SITES[i].name}`;
+    document.title = `AnimeWeb — ${SITES[i].name}`;
   }
 
   select.addEventListener('change', () => load(parseInt(select.value)));

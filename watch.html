@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watching — AniStream</title>
+  <title>Watching — AnimeWeb</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -71,7 +71,7 @@
 <body>
 
 <nav class="navbar">
-  <a href="index.html" class="nav-logo">⟐ AniStream</a>
+  <a href="index.html" class="nav-logo">⟐ AnimeWeb</a>
   <ul class="nav-links">
     <li><a href="index.html">Home</a></li>
     <li><a href="movies.html">Movies</a></li>
@@ -204,7 +204,7 @@ function updateTitle() {
   if (!animeData) return;
   const t = animeData.title.english || animeData.title.romaji;
   $('#ctrlTitle').textContent = `${t} · Episode ${curEp}`;
-  document.title = `Ep ${curEp} — ${t} — AniStream`;
+  document.title = `Ep ${curEp} — ${t} — AnimeWeb`;
 }
 
 $('#prevBtn').addEventListener('click', () => goEp(curEp - 1));
