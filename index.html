@@ -112,7 +112,7 @@
     <div class="hero-meta" id="heroMeta"></div>
     <div class="hero-desc" id="heroDesc"></div>
     <div class="hero-btns">
-      <button class="btn btn-primary" id="heroWatch">▶ Watch Now</button>
+      <button class="btn btn-primary" id="heroWatch">▶ Browse Free</button>
       <button class="btn btn-ghost" id="heroInfo">Info</button>
     </div>
   </div>
@@ -177,7 +177,7 @@
     genres.innerHTML = (a.genres || []).slice(0, 4)
       .map(g => `<span class="hero-genre">${g}</span>`).join('');
 
-    $('#heroWatch').onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
+    $('#heroWatch').onclick = () => location.href = 'browse.html';
     $('#heroInfo').onclick  = () => P.go('anime.html', { id: a.id });
   }
 
@@ -199,10 +199,32 @@
     heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
   }
 
+  // ── Display-only card (no click — home page is showcase only) ──
+  function showcaseCard(a) {
+    const title = a.title.english || a.title.romaji;
+    const img   = a.coverImage?.extraLarge || a.coverImage?.large || '';
+    const score = a.averageScore ? `<span class="acard-score">★ ${fmt.score(a.averageScore)}</span>` : '';
+    const eps   = a.episodes ? `<span>${a.episodes}ep</span>` : '';
+    const sep   = score && eps ? ' · ' : '';
+    const c = mk('div', 'acard');
+    c.style.cursor = 'default';
+    c.innerHTML = `
+      <img src="${img}" alt="" loading="lazy">
+      <div class="acard-info">
+        <div class="acard-title">${title}</div>
+        <div class="acard-meta">${score}${sep}${eps}</div>
+      </div>`;
+    c.querySelector('img').onerror = function () {
+      this.parentElement.style.background = 'var(--card-hover)';
+      this.style.display = 'none';
+    };
+    return c;
+  }
+
   // ── Rows ──
   function fillRow(el, items) {
     el.innerHTML = '';
-    items.forEach(a => el.appendChild(card(a)));
+    items.forEach(a => el.appendChild(showcaseCard(a)));
   }
 
   async function init() {
