@@ -7,173 +7,141 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    html, body { height: 100%; overflow: hidden; }
-    .top-bar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
-      height: 54px;
-      background: rgba(9,9,15,0.96);
-      backdrop-filter: blur(18px);
+    .movies-hero {
+      width: 100%; padding: 3rem 0 2rem;
+      text-align: center;
+      background: linear-gradient(to bottom, rgba(168,85,247,0.08) 0%, transparent 100%);
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center;
-      padding: 0 1.5rem; gap: 1.25rem;
+      margin-bottom: 2rem;
     }
-    .top-logo {
-      font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;
+    .movies-hero h1 {
+      font-size: 2rem; font-weight: 800; letter-spacing: -0.5px;
       background: var(--grad); -webkit-background-clip: text;
       background-clip: text; -webkit-text-fill-color: transparent;
-      text-decoration: none; white-space: nowrap;
     }
-    .top-nav { display: flex; gap: 1rem; align-items: center; }
-    .top-nav a {
-      font-size: 0.85rem; font-weight: 500; color: var(--muted);
-      text-decoration: none; transition: color var(--t);
+    .movies-hero p { color: var(--muted); font-size: 0.88rem; margin-top: 0.4rem; }
+
+    .filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+    .filter-btn {
+      padding: 0.4rem 1.1rem; border-radius: 100px;
+      font-size: 0.8rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); cursor: pointer; transition: all var(--t);
     }
-    .top-nav a:hover, .top-nav a.active { color: var(--text); }
-    .src-select {
-      background: var(--card); border: 1px solid var(--border);
-      color: var(--text); border-radius: 100px;
-      padding: 0.3rem 2rem 0.3rem 0.85rem;
-      font-size: 0.78rem; font-weight: 600;
-      cursor: pointer; outline: none;
-      appearance: none; -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.7rem center;
-      transition: border-color var(--t);
-    }
-    .src-select:hover, .src-select:focus { border-color: var(--purple); }
-    .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-    .top-search { flex: 1; max-width: 340px; margin-left: auto; position: relative; }
-    .top-search input {
-      width: 100%; background: var(--card); border: 1px solid var(--border);
-      border-radius: 100px; padding: 0.42rem 1rem 0.42rem 2.2rem;
-      color: var(--text); font-size: 0.82rem; outline: none; transition: border-color var(--t);
-    }
-    .top-search input:focus { border-color: var(--purple); }
-    .top-search input::placeholder { color: var(--dim); }
-    .top-search .si { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--dim); font-size: 0.78rem; }
-    .search-drop { position: absolute; top: calc(100% + 8px); left: 0; right: 0;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--r); overflow: hidden; display: none; z-index: 200; box-shadow: var(--shadow); }
-    .search-drop.open { display: block; }
-    .sdrop-item { display: flex; align-items: center; gap: 0.7rem;
-      padding: 0.65rem 1rem; cursor: pointer; transition: background var(--t); }
-    .sdrop-item:hover { background: var(--card-hover); }
-    .sdrop-item img { width: 38px; height: 54px; object-fit: cover; border-radius: var(--r-sm); flex-shrink: 0; }
-    .sdrop-title { font-size: 0.82rem; font-weight: 600; }
-    .sdrop-meta  { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
-    .site-frame {
-      position: fixed; top: 54px; left: 0; right: 0; bottom: 0;
-      width: 100%; height: calc(100% - 54px); border: none;
-    }
+    .filter-btn:hover  { border-color: var(--purple); color: var(--text); }
+    .filter-btn.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
   </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <a href="index.html" class="top-logo">⟐ AniStream</a>
-  <div class="sep"></div>
-  <select class="src-select" id="siteSelect"></select>
-  <div class="sep"></div>
-  <nav class="top-nav">
-    <a href="index.html">Home</a>
-    <a href="movies.html" class="active">Movies</a>
-    <a href="watchlist.html">My List</a>
-    <a href="browse.html">Browse Free</a>
-  </nav>
-  <div class="top-search">
-    <span class="si">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime…">
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">⟐ AniStream</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="movies.html" class="active">Movies</a></li>
+    <li><a href="watchlist.html">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+  </ul>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime...">
     <div class="search-drop" id="searchDrop"></div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="movies-hero">
+    <h1>Anime Movies</h1>
+    <p>Feature films, standalone specials, and cinematic releases</p>
+  </div>
+
+  <div class="section">
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" data-sort="POPULARITY_DESC">Popular</button>
+      <button class="filter-btn" data-sort="SCORE_DESC">Top Rated</button>
+      <button class="filter-btn" data-sort="TRENDING_DESC">Trending</button>
+      <button class="filter-btn" data-sort="START_DATE_DESC">Recent</button>
+    </div>
+
+    <div class="grid" id="movieGrid"></div>
+
+    <div id="moreWrap" style="text-align:center;margin-top:2.5rem;display:none">
+      <button class="btn btn-ghost" id="moreBtn">Load More</button>
+    </div>
   </div>
 </div>
 
-<iframe class="site-frame" id="frame" allowfullscreen
-  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>
-
 <script src="app.js"></script>
 <script>
-  // Movie-section URLs where known, home page fallback otherwise
-  const SITES = [
-    { name: 'Animetsu',        home: 'https://animetsu.cc/home' },
-    { name: 'AnimeLok',        home: 'https://animelok.online/home' },
-    { name: 'aniwave',         home: 'https://aniwave.to/filter?type=3' },
-    { name: 'AllManga',        home: 'https://allmanga.to/' },
-    { name: 'AniHQ',           home: 'https://anihq.to/movies' },
-    { name: 'AnimeRealms',     home: 'https://www.animerealms.org/movies' },
-    { name: 'Lunar',           home: 'https://lunaranime.ru/' },
-    { name: 'AniZone',         home: 'https://anizone.to/movies' },
-    { name: 'Anistream',       home: 'https://anistream.one/movies' },
-    { name: 'AniKuro',         home: 'https://anikuro.to/movies' },
-    { name: 'AnimeParadise',   home: 'https://www.animeparadise.moe/movies' },
-    { name: 'Rive',            home: 'https://www.rivestream.app/' },
-    { name: 'AnimeHub',        home: 'https://animehub.ac/movies' },
-    { name: 'Anidap',          home: 'https://anidap.se/' },
-    { name: 'AnimeOnsen',      home: 'https://animeonsen.xyz/' },
-    { name: 'FireAnime',       home: 'https://fireani.me/movies' },
-    { name: 'JustAnime',       home: 'https://justanime.to/movies' },
-    { name: 'Enma',            home: 'https://www.enma.lol/movies' },
-    { name: 'Senshi',          home: 'https://senshi.live/movies' },
-    { name: 'yugen',           home: 'https://yugen.to/movies/' },
-    { name: '1anime',          home: 'https://1ani.me/movies' },
-    { name: 'AniPlay',         home: 'https://aniplay.to/movies' },
-    { name: 'AnimeKhor',       home: 'https://animekhor.org/movies' },
-    { name: 'KayoAnime',       home: 'https://kayoanime.com/' },
-    { name: 'AnimeSilo',       home: 'https://animesilo.cc/movies' },
-    { name: 'AnimeNoSub',      home: 'https://animenosub.to/movies' },
-    { name: 'Kiroku',          home: 'https://kiroku.my/movies' },
-    { name: 'ReAnime',         home: 'https://reanime.to/movies' },
-    { name: 'AniDoor',         home: 'https://anidoor.me/movies' },
-    { name: 'AnimeXin',        home: 'https://animexin.dev/movies' },
-    { name: 'LMAnime',         home: 'https://lmanime.com/movies' },
-    { name: 'CKSub',           home: 'https://cksub.org/movies' },
-    { name: 'MyAnime',         home: 'https://myanime.live/movies' },
-    { name: 'Anoboye',         home: 'https://anoboye.com/movies' },
-    { name: 'Yomi',            home: 'https://yomi.to/movies' },
-    { name: 'KissAnime',       home: 'https://kissanime.com.ru/movies' },
-    { name: 'AnimeHub.io',     home: 'https://animehub.io/movies' },
-    { name: 'WCOStream',       home: 'https://wcostream.cc/movies' },
-    { name: 'AnimeDAO',        home: 'https://animedao.to/movies' },
-    { name: 'AnimeOnline360',  home: 'https://animeonline360.com/movies' },
-    { name: 'AnimeFLV',        home: 'https://animeflv.net/peliculas' },
-    { name: 'GogoAnimes',      home: 'https://gogoanimes.fi/movies' },
-    { name: 'AnimeRush',       home: 'https://animerush.tv/movies' },
-    { name: 'AnimeFreak',      home: 'https://animefreak.tv/watch/anime-movie' },
-    { name: 'GenoAnime',       home: 'https://genoanime.com/movies' },
-    { name: 'AnimeOwl',        home: 'https://animeowl.live/movies' },
-    { name: 'Marin',           home: 'https://marin.moe/movies' },
-    { name: 'AnimeFever',      home: 'https://animefever.cc/movies' },
-    { name: 'BestDubAnime',    home: 'https://bestdubbedanime.com/movies' },
-    { name: 'AnimeLatino',     home: 'https://animelatino.net/peliculas' },
-    { name: 'VostFree',        home: 'https://vostfree.ws/films-vf-vostfr/' },
-    { name: 'aniwave.live',    home: 'https://aniwave.live/movies' },
-    { name: 'Animes.Vision',   home: 'https://animes.vision/filmes' },
-    { name: 'OtakuStream',     home: 'https://otakustream.com/movies' },
-    { name: 'GogoAnime',       home: 'https://gogoanime.by/movies' },
-    { name: 'AnimeLand',       home: 'https://w7.animeland.tv/movies' },
-    { name: 'KawaiiAnime',     home: 'https://kawaii-anime.com/movies' },
-    { name: 'LuciferDonghua',  home: 'https://luciferdonghua.in/movies' },
-    { name: 'AnimeStream',     home: 'https://anime.uniquestream.net/movies' },
-    { name: 'AnimeSaturn',     home: 'https://animesaturn.cx/film' },
-  ];
+  const MOVIE_QUERY = `query($sort:[MediaSort],$p:Int){
+    Page(page:$p,perPage:24){
+      pageInfo{ hasNextPage }
+      media(type:ANIME,format:MOVIE,sort:$sort,averageScore_greater:1){
+        id title{romaji english} coverImage{extraLarge large}
+        duration status averageScore genres season seasonYear format
+      }
+    }
+  }`;
 
-  const frame  = $('#frame');
-  const select = $('#siteSelect');
+  let currentSort = 'POPULARITY_DESC';
+  let page = 1;
+  let loading = false;
 
-  SITES.forEach((s, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = s.name;
-    select.appendChild(opt);
-  });
+  const grid     = $('#movieGrid');
+  const moreWrap = $('#moreWrap');
+  const moreBtn  = $('#moreBtn');
 
-  function load(i) {
-    frame.src = SITES[i].home;
-    document.title = `Movies — ${SITES[i].name} — AniStream`;
+  async function fetchMovies(p) {
+    const d = await gql(MOVIE_QUERY, { sort: [currentSort], p });
+    return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
   }
 
-  select.addEventListener('change', () => load(parseInt(select.value)));
-  load(0);
+  async function load(sort) {
+    currentSort = sort;
+    page = 1;
+    moreWrap.style.display = 'none';
+    skels(grid, 24);
+    const { items, hasMore } = await fetchMovies(1);
+    grid.innerHTML = '';
+    if (!items.length) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">🎬</div>
+        <div class="empty-title">No movies found</div></div>`;
+      return;
+    }
+    items.forEach(a => grid.appendChild(card(a)));
+    if (hasMore) moreWrap.style.display = 'block';
+  }
+
+  async function loadMore() {
+    if (loading) return;
+    loading = true;
+    moreBtn.textContent = 'Loading…';
+    moreBtn.disabled = true;
+    page++;
+    const { items, hasMore } = await fetchMovies(page);
+    items.forEach(a => grid.appendChild(card(a)));
+    if (!hasMore) moreWrap.style.display = 'none';
+    else { moreBtn.textContent = 'Load More'; moreBtn.disabled = false; }
+    loading = false;
+  }
+
+  $$('.filter-btn', $('#filterBar')).forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      load(btn.dataset.sort);
+    });
+  });
+
+  moreBtn.addEventListener('click', loadMore);
+
+  load('POPULARITY_DESC').catch(err => {
+    grid.innerHTML = `<div class="empty">
+      <div class="empty-icon">⚠️</div>
+      <div class="empty-title">Failed to load</div>
+      <div class="empty-body">${err.message}</div>
+    </div>`;
+  });
 </script>
 </body>
 </html>
