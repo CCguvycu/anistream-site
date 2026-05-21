@@ -25,7 +25,9 @@
       background: var(--grad); -webkit-background-clip: text;
       background-clip: text; -webkit-text-fill-color: transparent;
       white-space: nowrap; text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
     }
+    .browse-logo img { -webkit-text-fill-color: initial; }
 
     .src-select {
       background: var(--card); border: 1px solid var(--border);
@@ -52,7 +54,7 @@
 <body>
 
   <div class="browse-bar">
-    <a href="index.html" class="browse-logo"><img src="logo.svg" style="height:24px;width:24px;vertical-align:middle;margin-right:6px;border-radius:6px"> AnimeWeb</a>
+    <a href="index.html" class="browse-logo"><img src="logo.svg" style="height:24px;width:24px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
     <div class="sep"></div>
     <select class="src-select" id="siteSelect"></select>
     <div class="sep"></div>

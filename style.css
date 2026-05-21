@@ -73,7 +73,9 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 1.35rem; font-weight: 800; letter-spacing: -0.5px;
   background: var(--grad); -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
 }
+.nav-logo img { -webkit-text-fill-color: initial; }
 
 .nav-links { list-style: none; display: flex; gap: 1.4rem; align-items: center; }
 .nav-links a { color: var(--muted); font-size: 0.875rem; font-weight: 500; transition: color var(--t); }
