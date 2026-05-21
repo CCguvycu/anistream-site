@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — AnimeWeb</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .about-wrap {
+      max-width: 860px; margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    .about-hero {
+      text-align: center; padding: 3rem 1rem 2.5rem;
+      border-bottom: 1px solid var(--border); margin-bottom: 3rem;
+    }
+    .about-logo {
+      width: 80px; height: 80px; border-radius: 20px;
+      margin: 0 auto 1.25rem; display: block;
+    }
+    .about-name {
+      font-size: 2.2rem; font-weight: 800; letter-spacing: -1px;
+      background: var(--grad); -webkit-background-clip: text;
+      background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.6rem;
+    }
+    .about-tagline {
+      font-size: 1rem; color: var(--muted); max-width: 480px; margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem; margin-bottom: 3rem;
+    }
+    .stat-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 1.5rem 1rem; text-align: center;
+    }
+    .stat-box-val {
+      font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+      background: var(--grad); -webkit-background-clip: text;
+      background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-box-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* Sections */
+    .about-section { margin-bottom: 2.5rem; }
+    .about-section h2 {
+      font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .about-section p {
+      color: var(--muted); line-height: 1.75; font-size: 0.9rem;
+    }
+
+    /* Feature list */
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+    .feature-list li {
+      display: flex; align-items: flex-start; gap: 0.85rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 0.9rem 1.1rem;
+      font-size: 0.88rem;
+    }
+    .feature-list li span:first-child { font-size: 1.15rem; flex-shrink: 0; }
+    .feature-list li strong { display: block; font-weight: 600; margin-bottom: 0.15rem; }
+    .feature-list li small { color: var(--dim); font-size: 0.78rem; }
+
+    /* Credits */
+    .credit-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 1rem; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--r);
+      margin-bottom: 0.6rem; font-size: 0.88rem;
+    }
+    .credit-row a {
+      color: var(--purple-lt); font-size: 0.78rem; font-weight: 600;
+      transition: color var(--t);
+    }
+    .credit-row a:hover { color: var(--purple); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="movies.html">Movies</a></li>
+    <li><a href="watchlist.html">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+  </ul>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime...">
+    <div class="search-drop" id="searchDrop"></div>
+  </div>
+</nav>
+
+<div class="page">
+<div class="about-wrap">
+
+  <!-- Hero -->
+  <div class="about-hero">
+    <img src="logo.svg" class="about-logo" alt="AnimeWeb">
+    <div class="about-name">AnimeWeb</div>
+    <p class="about-tagline">
+      A free, open anime discovery and streaming hub. Browse thousands of titles,
+      watch trailers, track your list, and stream through 60+ verified sources — all in one place.
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-box-val">60+</div>
+      <div class="stat-box-label">Streaming Sources</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-val" id="statAnime">—</div>
+      <div class="stat-box-label">Anime in Database</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-val">Free</div>
+      <div class="stat-box-label">Always & Forever</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-val">0</div>
+      <div class="stat-box-label">Accounts Required</div>
+    </div>
+  </div>
+
+  <!-- What it is -->
+  <div class="about-section">
+    <h2>⟐ What is AnimeWeb?</h2>
+    <p>
+      AnimeWeb is a static, free anime web platform that combines the AniList database
+      with 60+ embeddable streaming sites. It doesn't host any content — it aggregates
+      metadata from AniList and lets you browse directly to streaming sites that
+      don't block embedding.
+    </p>
+    <p style="margin-top:0.75rem">
+      No sign-up, no subscription, no ads injected by us. Open the site, find something
+      to watch, and hit Browse Free to start streaming.
+    </p>
+  </div>
+
+  <!-- Features -->
+  <div class="about-section">
+    <h2>✦ Features</h2>
+    <ul class="feature-list">
+      <li>
+        <span>🏠</span>
+        <div>
+          <strong>Home Page</strong>
+          <small>Hero banner, This Season, New Releases, Trending, Popular, Top Rated — with 15 genre shortcuts</small>
+        </div>
+      </li>
+      <li>
+        <span>🎬</span>
+        <div>
+          <strong>Movies</strong>
+          <small>Dedicated anime film browser — filter by Popular, Top Rated, Trending, or Recent</small>
+        </div>
+      </li>
+      <li>
+        <span>🔍</span>
+        <div>
+          <strong>Search</strong>
+          <small>Live search with instant dropdown, full results page, genre and sort filtering</small>
+        </div>
+      </li>
+      <li>
+        <span>📄</span>
+        <div>
+          <strong>Anime Detail Pages</strong>
+          <small>Trailer, synopsis, episode list, character grid, related anime, recommendations</small>
+        </div>
+      </li>
+      <li>
+        <span>▶</span>
+        <div>
+          <strong>Watch Page</strong>
+          <small>Embedded player with episode sidebar, AnimeLok + Animetsu sources, fullscreen button</small>
+        </div>
+      </li>
+      <li>
+        <span>🌐</span>
+        <div>
+          <strong>Browse Free</strong>
+          <small>60+ streaming sites in a full-screen iframe with a dropdown picker</small>
+        </div>
+      </li>
+      <li>
+        <span>♥</span>
+        <div>
+          <strong>My List</strong>
+          <small>Heart any anime to save it — stored locally, no account needed</small>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Credits -->
+  <div class="about-section">
+    <h2>🙏 Credits</h2>
+    <div class="credit-row">
+      <span>Anime metadata &amp; database</span>
+      <a href="https://anilist.co" target="_blank" rel="noopener">AniList →</a>
+    </div>
+    <div class="credit-row">
+      <span>AniList GraphQL API</span>
+      <a href="https://anilist.gitbook.io/anilist-apiv2-docs/" target="_blank" rel="noopener">Docs →</a>
+    </div>
+    <div class="credit-row">
+      <span>Source code</span>
+      <a href="https://github.com/CCguvycu/anistream-site" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+    <div class="credit-row">
+      <span>Hosted on GitHub Pages</span>
+      <a href="https://ccguvycu.github.io/" target="_blank" rel="noopener">Live Site →</a>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  // Fetch total anime count from AniList
+  gql(`{ SiteStatistics { anime { nodes { count } } } }`)
+    .then(d => {
+      const count = d?.SiteStatistics?.anime?.nodes?.[0]?.count;
+      if (count) {
+        $('#statAnime').textContent = (count / 1000).toFixed(0) + 'K+';
+      }
+    })
+    .catch(() => { $('#statAnime').textContent = '20K+'; });
+</script>
+</body>
+</html>
