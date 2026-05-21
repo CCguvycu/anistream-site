@@ -26,15 +26,18 @@
       white-space: nowrap; text-decoration: none;
     }
 
-    .src-pills { display: flex; gap: 0.35rem; }
-    .src-pill {
-      padding: 0.25rem 0.75rem; border-radius: 100px;
-      font-size: 0.72rem; font-weight: 600;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--muted); cursor: pointer; transition: all var(--t);
+    .src-select {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); border-radius: 100px;
+      padding: 0.3rem 2rem 0.3rem 0.85rem;
+      font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; outline: none;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 0.7rem center;
+      transition: border-color var(--t);
     }
-    .src-pill:hover  { border-color: var(--purple); color: var(--text); }
-    .src-pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+    .src-select:hover, .src-select:focus { border-color: var(--purple); }
 
     .browse-frame {
       position: fixed;
@@ -50,7 +53,7 @@
   <div class="browse-bar">
     <a href="index.html" class="browse-logo">⟐ AniStream</a>
     <div class="sep"></div>
-    <div class="src-pills" id="pills"></div>
+    <select class="src-select" id="siteSelect"></select>
     <div class="sep"></div>
     <a href="index.html" style="font-size:0.75rem;color:var(--muted)">← Home</a>
     <a href="watchlist.html" style="font-size:0.75rem;color:var(--muted);margin-left:0.5rem">My List</a>
@@ -63,27 +66,34 @@
 <script src="app.js"></script>
 <script>
   const SITES = [
-    { name: 'Animetsu', url: 'https://animetsu.cc/home' },
-    { name: 'AnimeLok', url: 'https://animelok.online/home' },
+    { name: 'Animetsu',   url: 'https://animetsu.cc/home' },
+    { name: 'AnimeLok',   url: 'https://animelok.online/home' },
+    { name: 'HiAnime',    url: 'https://hianime.to/home' },
+    { name: '9anime',     url: 'https://9anime.to/home' },
+    { name: 'aniwave',    url: 'https://aniwave.to/home' },
+    { name: 'AllManga',   url: 'https://allmanga.to/' },
+    { name: 'yugen',      url: 'https://yugen.to/' },
+    { name: '1anime',     url: 'https://1anime.app/' },
+    { name: 'AniPlay',    url: 'https://aniplay.to/' },
+    { name: 'AnimeKhor',  url: 'https://animekhor.org/' },
+    { name: 'KayoAnime',  url: 'https://kayoanime.com/' },
   ];
 
-  let current = 0;
-  const frame = $('#frame');
-  const pills = $('#pills');
+  const frame  = $('#frame');
+  const select = $('#siteSelect');
+
+  SITES.forEach((s, i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = s.name;
+    select.appendChild(opt);
+  });
 
   function loadSite(i) {
-    current = i;
     frame.src = SITES[i].url;
-    $$('.src-pill').forEach((p, j) => p.classList.toggle('active', j === i));
     document.title = `${SITES[i].name} — AniStream`;
   }
 
-  SITES.forEach((s, i) => {
-    const p = mk('button', `src-pill${i === 0 ? ' active' : ''}`, s.name);
-    p.addEventListener('click', () => loadSite(i));
-    pills.appendChild(p);
-  });
-
+  select.addEventListener('change', () => loadSite(parseInt(select.value)));
   loadSite(0);
 </script>
 </body>

@@ -29,15 +29,19 @@
       text-decoration: none; transition: color var(--t);
     }
     .top-nav a:hover { color: var(--text); }
-    .src-pills { display: flex; gap: 0.35rem; }
-    .src-pill {
-      padding: 0.25rem 0.7rem; border-radius: 100px;
-      font-size: 0.72rem; font-weight: 600;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--muted); cursor: pointer; transition: all var(--t);
+    .src-select {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); border-radius: 100px;
+      padding: 0.3rem 2rem 0.3rem 0.85rem;
+      font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; outline: none;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.7rem center;
+      transition: border-color var(--t);
     }
-    .src-pill:hover  { border-color: var(--purple); color: var(--text); }
-    .src-pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+    .src-select:hover, .src-select:focus { border-color: var(--purple); }
     .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
     .top-search { flex: 1; max-width: 340px; margin-left: auto; position: relative; }
     .top-search input {
@@ -69,7 +73,7 @@
 <div class="top-bar">
   <a href="index.html" class="top-logo">⟐ AniStream</a>
   <div class="sep"></div>
-  <div class="src-pills" id="pills"></div>
+  <select class="src-select" id="siteSelect"></select>
   <div class="sep"></div>
   <nav class="top-nav">
     <a href="watchlist.html">My List</a>
@@ -86,28 +90,37 @@
 
 <script src="app.js"></script>
 <script>
+  // All confirmed embeddable (no X-Frame-Options) — tested 2026-05-21
   const SITES = [
-    { name: 'Animetsu', home: 'https://animetsu.cc/home' },
-    { name: 'AnimeLok', home: 'https://animelok.online/home' },
+    { name: 'Animetsu',   home: 'https://animetsu.cc/home' },
+    { name: 'AnimeLok',   home: 'https://animelok.online/home' },
+    { name: 'HiAnime',    home: 'https://hianime.to/home' },
+    { name: '9anime',     home: 'https://9anime.to/home' },
+    { name: 'aniwave',    home: 'https://aniwave.to/home' },
+    { name: 'AllManga',   home: 'https://allmanga.to/' },
+    { name: 'yugen',      home: 'https://yugen.to/' },
+    { name: '1anime',     home: 'https://1anime.app/' },
+    { name: 'AniPlay',    home: 'https://aniplay.to/' },
+    { name: 'AnimeKhor',  home: 'https://animekhor.org/' },
+    { name: 'KayoAnime',  home: 'https://kayoanime.com/' },
   ];
 
-  let cur = 0;
   const frame  = $('#frame');
-  const pills  = $('#pills');
+  const select = $('#siteSelect');
+
+  SITES.forEach((s, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.name;
+    select.appendChild(opt);
+  });
 
   function load(i) {
-    cur = i;
     frame.src = SITES[i].home;
-    $$('.src-pill').forEach((p, j) => p.classList.toggle('active', j === i));
     document.title = `AniStream — ${SITES[i].name}`;
   }
 
-  SITES.forEach((s, i) => {
-    const p = mk('button', `src-pill${i === 0 ? ' active' : ''}`, s.name);
-    p.addEventListener('click', () => load(i));
-    pills.appendChild(p);
-  });
-
+  select.addEventListener('change', () => load(parseInt(select.value)));
   load(0);
 </script>
 </body>
