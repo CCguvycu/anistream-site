@@ -71,6 +71,9 @@
     <div class="movies-hero-label">🎬 Featured Film</div>
     <div class="movies-hero-title" id="heroMovieTitle">Loading…</div>
     <div class="movies-hero-meta" id="heroMovieMeta"></div>
+    <div style="margin-top:1rem">
+      <button class="btn btn-primary" id="heroWatchBtn">▶ Watch Now</button>
+    </div>
   </div>
 </div>
 
@@ -125,8 +128,8 @@
     const yr    = a.seasonYear ? `<span>${a.seasonYear}</span>` : '';
     const dur   = a.duration   ? `<span>${a.duration} min</span>` : '';
     $('#heroMovieMeta').innerHTML = [score, yr, dur].filter(Boolean).join('<span style="color:var(--dim)">·</span>');
-    $('#moviesHero').style.cursor = 'pointer';
-    $('#moviesHero').onclick = () => P.go('anime.html', { id: a.id });
+    $('#moviesHero').style.cursor = 'default';
+    $('#heroWatchBtn').onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
   }
 
   async function load(sort) {
@@ -146,7 +149,11 @@
     const featured = items.find(a => a.bannerImage) || items[0];
     setHero(featured);
 
-    items.forEach(a => grid.appendChild(card(a)));
+    items.forEach(a => {
+      const c = card(a);
+      c.onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
+      grid.appendChild(c);
+    });
     if (hasMore) moreWrap.style.display = 'block';
   }
 
@@ -155,7 +162,11 @@
     loading = true; moreBtn.textContent = 'Loading…'; moreBtn.disabled = true;
     page++;
     const { items, hasMore } = await fetchMovies(page);
-    items.forEach(a => grid.appendChild(card(a)));
+    items.forEach(a => {
+      const c = card(a);
+      c.onclick = () => P.go('watch.html', { id: a.id, ep: 1 });
+      grid.appendChild(c);
+    });
     if (!hasMore) moreWrap.style.display = 'none';
     else { moreBtn.textContent = 'Load More'; moreBtn.disabled = false; }
     loading = false;
