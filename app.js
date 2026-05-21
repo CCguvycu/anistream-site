@@ -4,13 +4,17 @@
 
 const ANILIST = 'https://graphql.anilist.co';
 
-// Core GraphQL fetcher
-async function gql(query, vars = {}) {
+// Core GraphQL fetcher with retry on 429
+async function gql(query, vars = {}, _retry = 0) {
   const r = await fetch(ANILIST, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, variables: vars })
   });
+  if (r.status === 429 && _retry < 3) {
+    await new Promise(res => setTimeout(res, 1500 * (_retry + 1)));
+    return gql(query, vars, _retry + 1);
+  }
   const j = await r.json();
   if (j.errors) throw new Error(j.errors[0].message);
   return j.data;
