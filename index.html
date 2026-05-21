@@ -46,6 +46,10 @@
       margin-bottom: 1.25rem;
     }
     .hero-btns { display: flex; gap: 0.75rem; }
+    .hero-stats { display: flex; gap: 1.25rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .hero-stat { font-size: 0.8rem; }
+    .hero-stat-label { color: var(--dim); font-size: 0.72rem; margin-bottom: 1px; }
+    .hero-stat-val { font-weight: 600; }
     .hero-dots {
       position: absolute; bottom: 1.25rem; right: 2rem;
       display: flex; gap: 0.4rem;
@@ -111,9 +115,9 @@
     <div class="hero-title" id="heroTitle">Loading…</div>
     <div class="hero-meta" id="heroMeta"></div>
     <div class="hero-desc" id="heroDesc"></div>
+    <div class="hero-stats" id="heroStats"></div>
     <div class="hero-btns">
       <button class="btn btn-primary" id="heroWatch">▶ Browse Free</button>
-      <button class="btn btn-ghost" id="heroInfo">Info</button>
     </div>
   </div>
   <div class="hero-dots" id="heroDots"></div>
@@ -159,26 +163,29 @@
   let heroTimer;
 
   function setHero(a) {
-    const bg    = $('#heroBg');
-    const title = $('#heroTitle');
-    const meta  = $('#heroMeta');
-    const desc  = $('#heroDesc');
-    const genres = $('#heroGenres');
+    $('#heroBg').style.backgroundImage = `url('${a.bannerImage || a.coverImage?.extraLarge || ''}')`;
+    $('#heroTitle').textContent = a.title.english || a.title.romaji;
+    $('#heroDesc').textContent  = fmt.plain(a.description || '');
+    $('#heroMeta').innerHTML    = '';
 
-    bg.style.backgroundImage = `url('${a.bannerImage || a.coverImage?.extraLarge || ''}')`;
-    title.textContent = a.title.english || a.title.romaji;
-    desc.textContent  = fmt.plain(a.description || '');
-
-    const score = a.averageScore ? `<span class="hero-score">★ ${fmt.score(a.averageScore)}</span>` : '';
-    const eps   = a.episodes ? `${a.episodes} eps` : '';
-    const yr    = a.seasonYear || '';
-    meta.innerHTML = [score, eps, yr].filter(Boolean).join('<span style="color:var(--dim)">·</span>');
-
-    genres.innerHTML = (a.genres || []).slice(0, 4)
+    $('#heroGenres').innerHTML = (a.genres || []).slice(0, 4)
       .map(g => `<span class="hero-genre">${g}</span>`).join('');
 
+    const stats = [
+      a.averageScore ? { label: 'Score',    val: `★ ${fmt.score(a.averageScore)}` } : null,
+      a.episodes     ? { label: 'Episodes', val: a.episodes }                       : null,
+      a.status       ? { label: 'Status',   val: fmt.status(a.status) }             : null,
+      a.seasonYear   ? { label: 'Year',     val: a.seasonYear }                     : null,
+      a.format       ? { label: 'Format',   val: a.format }                         : null,
+    ].filter(Boolean);
+
+    $('#heroStats').innerHTML = stats.map(s => `
+      <div class="hero-stat">
+        <div class="hero-stat-label">${s.label}</div>
+        <div class="hero-stat-val">${s.val}</div>
+      </div>`).join('');
+
     $('#heroWatch').onclick = () => location.href = 'browse.html';
-    $('#heroInfo').onclick  = () => P.go('anime.html', { id: a.id });
   }
 
   function buildDots(n) {
