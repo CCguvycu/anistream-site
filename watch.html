@@ -23,27 +23,7 @@
       width: 100%; height: 100%;
       border: none;
     }
-    .player-init {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 1rem; background: var(--card);
-      cursor: pointer; transition: background var(--t);
-    }
-    .player-init:hover { background: var(--card-hover); }
-    .player-init-icon {
-      width: 70px; height: 70px; border-radius: 50%;
-      background: var(--grad); display: flex; align-items: center;
-      justify-content: center; font-size: 2rem;
-      box-shadow: 0 0 30px rgba(168,85,247,0.4);
-    }
-    .player-init-title { font-size: 1rem; font-weight: 700; }
-    .player-init-sub   { font-size: 0.8rem; color: var(--muted); }
-    .player-init-note  {
-      font-size: 0.72rem; color: var(--dim);
-      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-      padding: 0.4rem 0.9rem; border-radius: 100px; margin-top: 0.25rem;
-    }
+    .pill.fs-btn { margin-left: auto; }
 
     /* ── Controls ── */
     .ctrl-bar {
@@ -113,15 +93,7 @@
     <div class="watch-main">
 
       <!-- Player -->
-      <div class="player-box" id="playerBox">
-        <!-- Click-to-load screen shown before user activates player -->
-        <div class="player-init" id="playerInit" onclick="activatePlayer()">
-          <div class="player-init-icon">▶</div>
-          <div class="player-init-title" id="initTitle">Loading…</div>
-          <div class="player-init-sub"   id="initSub">Click to open player</div>
-          <div class="player-init-note">Opens in embedded player below</div>
-        </div>
-      </div>
+      <div class="player-box" id="playerBox"></div>
 
       <!-- Controls -->
       <div class="ctrl-bar">
@@ -130,6 +102,7 @@
           <button class="pill" id="prevBtn" disabled>← Prev</button>
           <button class="pill" id="nextBtn" disabled>Next →</button>
           <button class="pill" id="refreshBtn" title="Reload player">↺ Retry</button>
+          <button class="pill fs-btn" id="fsBtn">⛶ Fullscreen</button>
         </div>
       </div>
 
@@ -141,8 +114,7 @@
 
       <!-- Navigation hint -->
       <div class="nav-hint">
-        ⟐ If the video doesn't load, switch source above.
-        Animetsu loads first — click AnimeLok if it shows an error.
+        ⟐ If the video doesn't load, switch source above or hit ↺ Retry.
       </div>
 
     </div>
@@ -185,7 +157,6 @@ let curEp     = parseInt(P.get('ep')) || 1;
 let totalEps  = 0;
 let animeData = null;
 let srcIdx    = 0;
-let playerActive = false;
 
 if (!animeId) location.href = 'index.html';
 $('#backLink').href = `anime.html?id=${animeId}`;
@@ -196,44 +167,23 @@ function buildSrcBtns() {
   row.innerHTML = '';
   SOURCES.forEach((s, i) => {
     const b = mk('button', `src-btn${i === srcIdx ? ' active' : ''}`, s.name);
-    b.addEventListener('click', () => {
-      srcIdx = i;
-      $$('.src-btn').forEach((x, j) => x.classList.toggle('active', j === i));
-      if (playerActive) loadIframe(i);
-    });
+    b.addEventListener('click', () => { srcIdx = i; loadIframe(i); });
     row.appendChild(b);
   });
 }
 
-// Activate player on first click
-function activatePlayer() {
-  playerActive = true;
-  $('#playerInit').remove();
-  loadIframe(srcIdx);
-  S.saveProgress(animeId, curEp);
-  if (animeData) S.pushHistory(animeData, curEp);
-}
-
-// Load iframe with selected source
 function loadIframe(idx) {
   srcIdx = idx;
   $$('.src-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
-
-  const box   = $('#playerBox');
-  const title = animeData?.title.romaji || animeData?.title.english || '';
-  const url   = SOURCES[idx].url(animeId, curEp, title);
-
-  // Remove existing iframe
+  const box = $('#playerBox');
   box.querySelector('iframe')?.remove();
-
   const f = document.createElement('iframe');
-  f.src = url;
+  f.src = SOURCES[idx].url(animeId, curEp);
   f.allowFullscreen = true;
   f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
   box.appendChild(f);
 }
 
-// Episode navigation
 function goEp(ep) {
   if (ep < 1 || (totalEps > 0 && ep > totalEps)) return;
   curEp = ep;
@@ -241,8 +191,7 @@ function goEp(ep) {
   updateNav();
   updateTitle();
   highlightSidebar();
-  updateInitScreen();
-  if (playerActive) loadIframe(srcIdx);
+  loadIframe(srcIdx);
   S.saveProgress(animeId, ep);
   if (animeData) S.pushHistory(animeData, ep);
 }
@@ -254,20 +203,16 @@ function updateNav() {
 function updateTitle() {
   if (!animeData) return;
   const t = animeData.title.english || animeData.title.romaji;
-  $('#ctrlTitle').textContent  = `${t} · Episode ${curEp}`;
+  $('#ctrlTitle').textContent = `${t} · Episode ${curEp}`;
   document.title = `Ep ${curEp} — ${t} — AniStream`;
-}
-function updateInitScreen() {
-  if (!animeData) return;
-  const t = animeData.title.english || animeData.title.romaji;
-  $('#initTitle').textContent = `${t} · Episode ${curEp}`;
-  $('#initSub').textContent   = `Click to open ${SOURCES[srcIdx].name}`;
 }
 
 $('#prevBtn').addEventListener('click', () => goEp(curEp - 1));
 $('#nextBtn').addEventListener('click', () => goEp(curEp + 1));
-$('#refreshBtn').addEventListener('click', () => {
-  if (playerActive) loadIframe(srcIdx);
+$('#refreshBtn').addEventListener('click', () => loadIframe(srcIdx));
+$('#fsBtn').addEventListener('click', () => {
+  const box = $('#playerBox');
+  (box.requestFullscreen || box.webkitRequestFullscreen || box.mozRequestFullScreen).call(box);
 });
 
 // Episode sidebar
@@ -300,7 +245,6 @@ function highlightSidebar() {
   if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
-// Init
 async function init() {
   const data = await gql(Q.detail, { id: animeId });
   animeData  = data.Media;
@@ -312,13 +256,15 @@ async function init() {
   buildSrcBtns();
   updateNav();
   updateTitle();
-  updateInitScreen();
   buildSidebar(totalEps);
+  loadIframe(srcIdx);
+  S.saveProgress(animeId, curEp);
+  S.pushHistory(animeData, curEp);
 }
 
 init().catch(err => {
   console.error(err);
-  $('#initTitle').textContent = '⚠ Failed to load';
+  $('#ctrlTitle').textContent = '⚠ Failed to load';
 });
 </script>
 </body>
