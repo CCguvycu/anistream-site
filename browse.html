@@ -142,12 +142,11 @@
     /* ── Remove / restore ─────────────────────────────────────────────────── */
     .site-remove {
       margin-left: auto; background: none; border: none; color: var(--dim);
-      font-size: 0.85rem; cursor: pointer; padding: 0.2rem 0.35rem;
+      font-size: 0.78rem; cursor: pointer; padding: 0.25rem 0.4rem;
       border-radius: 5px; line-height: 1; flex-shrink: 0;
-      opacity: 0; transition: opacity 0.15s, color 0.15s;
+      transition: color 0.15s, background 0.15s;
     }
-    .site-card:hover .site-remove { opacity: 1; }
-    .site-remove:hover { color: #f87171; }
+    .site-remove:hover { color: #f87171; background: rgba(248,113,113,0.1); }
 
     .site-restore {
       margin-left: auto; background: none; border: none;
@@ -480,26 +479,32 @@ function renderList() {
       </div>
       <span class="site-tag ${TAG_CLASS[s.tag] || 'tag-sub'}">${s.tag}</span>
       ${isHidden
-        ? `<button class="site-restore" title="Restore ${s.name}">↺</button>`
-        : `<button class="site-remove" title="Hide ${s.name}">✕</button>`
+        ? `<button class="site-restore" data-name="${s.name}" title="Restore">↺</button>`
+        : `<button class="site-remove"  data-name="${s.name}" title="Hide">✕</button>`
       }`;
-
-    if (isHidden) {
-      card.querySelector('.site-restore').addEventListener('click', e => {
-        e.stopPropagation();
-        restoreSite(s.name);
-      });
-    } else {
-      card.querySelector('.site-remove').addEventListener('click', e => {
-        e.stopPropagation();
-        hideSite(s.name);
-      });
-      card.addEventListener('click', () => loadSite(s.idx));
-    }
 
     siteList.appendChild(card);
   });
 }
+
+// ── Single delegated listener on the list ────────────────────────────────────
+siteList.addEventListener('click', e => {
+  const removeBtn  = e.target.closest('.site-remove');
+  const restoreBtn = e.target.closest('.site-restore');
+  const card       = e.target.closest('.site-card');
+
+  if (removeBtn) {
+    hideSite(removeBtn.dataset.name);
+    return;
+  }
+  if (restoreBtn) {
+    restoreSite(restoreBtn.dataset.name);
+    return;
+  }
+  if (card && !card.classList.contains('is-hidden')) {
+    loadSite(parseInt(card.dataset.idx));
+  }
+});
 
 // ── Load site ─────────────────────────────────────────────────────────────────
 function loadSite(idx) {
