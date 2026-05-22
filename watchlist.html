@@ -1,122 +1,115 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My List — AnimeWeb</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
-
-<nav class="navbar">
-  <a href="database.html" class="nav-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
-  <ul class="nav-links">
-    <li><a href="database.html">Home</a></li>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My List — AnimeWeb</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="database.html" class="nav-logo">
+    <img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb
+  </a>
+  <ul class="nav-links">
+    <li><a href="database.html">Home</a></li>
     <li><a href="movies.html">Movies</a></li>
-    <li><a href="database.html">Database</a></li>
-    <li><a href="watchlist.html" class="active">My List</a></li>
-    <li><a href="browse.html">Browse Free</a></li>
-    <li><a href="about.html">About</a></li>
-  </ul>
-  <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime...">
-    <div class="search-drop" id="searchDrop"></div>
-  </div>
-</nav>
-
-<div class="page">
-  <div class="section" style="padding-top:2.5rem">
-
-    <div class="section-head" style="margin-bottom:1.5rem">
-      <h1 class="section-title" style="font-size:1.5rem">My List</h1>
-      <span id="countLabel" style="font-size:0.82rem;color:var(--dim)"></span>
-    </div>
-
-    <div class="grid" id="wlGrid"></div>
-
-  </div>
-</div>
-
-<script src="app.js"></script>
-<script>
-  function render() {
-    const wl   = S.watchlist();
-    const grid = $('#wlGrid');
-    grid.innerHTML = '';
-
-    $('#countLabel').textContent = wl.length ? `${wl.length} anime saved` : '';
-
-    if (!wl.length) {
-      grid.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">♥</div>
-          <div class="empty-title">Your list is empty</div>
-          <div class="empty-body">
-            Hover over any anime card and click ♥ to save it here.
-          </div>
-          <a href="index.html" class="btn btn-primary" style="margin-top:1.25rem;display:inline-flex">Browse Anime</a>
-        </div>`;
-      return;
-    }
-
-    // Fetch full AniList data for saved IDs so cards render with images
-    const ids = wl.map(x => x.id);
-    const QUERY = `query($ids:[Int]){
-      Page(page:1,perPage:50){
-        media(id_in:$ids,type:ANIME){
-          id title{romaji english} coverImage{extraLarge large}
-          episodes status averageScore genres season seasonYear format
-        }
-      }
-    }`;
-
-    gql(QUERY, { ids }).then(data => {
-      const mediaMap = {};
-      data.Page.media.forEach(m => { mediaMap[m.id] = m; });
-
-      // Render in saved order
-      ids.forEach(id => {
-        const m = mediaMap[id];
-        if (m) {
-          grid.appendChild(card(m));
-        } else {
-          // Fallback card from cached data
-          const cached = wl.find(x => x.id === id);
-          if (cached) {
-            const c = mk('div', 'acard');
-            c.innerHTML = `
-              <img src="${cached.img||''}" alt="" loading="lazy"
-                onerror="this.style.display='none'">
-              <div class="acard-info">
-                <div class="acard-title">${cached.title}</div>
-              </div>
-              <div class="acard-play">▶</div>`;
-            c.addEventListener('click', () => P.go('anime.html', { id: cached.id }));
-            grid.appendChild(c);
-          }
-        }
-      });
-    }).catch(() => {
-      // Fallback: render from cached data only
-      wl.forEach(item => {
-        const c = mk('div', 'acard');
-        c.innerHTML = `
-          <img src="${item.img||''}" alt="" loading="lazy"
-            onerror="this.style.display='none'">
-          <div class="acard-info">
-            <div class="acard-title">${item.title}</div>
-          </div>
-          <div class="acard-play">▶</div>`;
-        c.addEventListener('click', () => P.go('anime.html', { id: item.id }));
-        grid.appendChild(c);
-      });
-    });
-  }
-
-  render();
-</script>
-</body>
-</html>
+    <li><a href="watchlist.html" class="active">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+  </ul>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime...">
+    <div class="search-drop" id="searchDrop"></div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="section" style="padding-top:2.5rem">
+
+    <div class="section-head" style="margin-bottom:1.5rem">
+      <h1 class="section-title" style="font-size:1.5rem">My List</h1>
+      <span id="countLabel" style="font-size:0.82rem;color:var(--dim)"></span>
+    </div>
+
+    <div class="grid" id="wlGrid"></div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  initSearch();
+
+  async function render() {
+    const wl   = S.watchlist();
+    const grid = $('#wlGrid');
+
+    $('#countLabel').textContent = wl.length ? `${wl.length} anime saved` : '';
+
+    if (!wl.length) {
+      grid.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">♥</div>
+          <div class="empty-title">Your list is empty</div>
+          <div class="empty-body">Browse anime and click ♥ on any card to save it here.</div>
+          <a href="database.html" class="btn btn-primary" style="margin-top:1.25rem;display:inline-flex">Browse Anime</a>
+        </div>`;
+      return;
+    }
+
+    skels(grid, wl.length);
+
+    const ids = wl.map(x => x.id);
+    const QUERY = `query($ids:[Int]){
+      Page(page:1,perPage:50){
+        media(id_in:$ids,type:ANIME){
+          id title{romaji english} coverImage{extraLarge large}
+          episodes status averageScore genres season seasonYear format
+        }
+      }
+    }`;
+
+    try {
+      const data     = await gql(QUERY, { ids });
+      const mediaMap = {};
+      data.Page.media.forEach(m => { mediaMap[m.id] = m; });
+      grid.innerHTML = '';
+      ids.forEach(id => {
+        const m = mediaMap[id];
+        if (m) {
+          grid.appendChild(card(m));
+        } else {
+          const cached = wl.find(x => x.id === id);
+          if (cached) {
+            const c = mk('div', 'acard');
+            c.innerHTML = `
+              <img src="${cached.img||''}" alt="" loading="lazy" onerror="this.style.display='none'">
+              <div class="acard-info"><div class="acard-title">${cached.title}</div></div>
+              <div class="acard-play">▶</div>`;
+            c.addEventListener('click', () => P.go('anime.html', { id: cached.id }));
+            grid.appendChild(c);
+          }
+        }
+      });
+    } catch {
+      grid.innerHTML = '';
+      wl.forEach(item => {
+        const c = mk('div', 'acard');
+        c.innerHTML = `
+          <img src="${item.img||''}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <div class="acard-info"><div class="acard-title">${item.title}</div></div>
+          <div class="acard-play">▶</div>`;
+        c.addEventListener('click', () => P.go('anime.html', { id: item.id }));
+        grid.appendChild(c);
+      });
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
