@@ -29,6 +29,7 @@ const MF = `
   episodes
   status
   averageScore
+  popularity
   genres
   season
   seasonYear

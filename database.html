@@ -550,7 +550,7 @@ function render() {
 
   items.sort((a, b) => {
     if (curSort === 'score')      return (b.averageScore || 0) - (a.averageScore || 0);
-    if (curSort === 'popularity') return (a.popularity || 9999) - (b.popularity || 9999);
+    if (curSort === 'popularity') return (b.popularity || 0) - (a.popularity || 0);
     if (curSort === 'newest')     return (b.seasonYear || 0) - (a.seasonYear || 0);
     if (curSort === 'title') {
       const ta = a.title?.english || a.title?.romaji || '';

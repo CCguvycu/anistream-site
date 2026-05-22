@@ -1,274 +1,546 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watching — AnimeWeb</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    /* ── Player ── */
-    .player-box {
-      position: relative;
-      width: 100%;
-      height: calc(100vh - 160px);
-      min-height: 520px;
-      background: #000;
-      border-radius: var(--r-lg);
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .player-box iframe {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      border: none;
-    }
-    .pill.fs-btn { margin-left: auto; }
-
-    /* ── Controls ── */
-    .ctrl-bar {
-      display: flex; align-items: center; flex-wrap: wrap;
-      gap: 0.6rem; margin: 0.85rem 0 0;
-    }
-    .ctrl-title { font-weight: 700; font-size: 0.9rem; flex: 1; min-width: 0;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .pill-row { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-    .pill {
-      padding: 0.3rem 0.85rem; border-radius: 100px;
-      font-size: 0.75rem; font-weight: 600;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--muted); cursor: pointer; transition: all var(--t);
-    }
-    .pill:hover  { border-color: var(--purple); color: var(--text); }
-    .pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
-    .pill:disabled { opacity: 0.35; pointer-events: none; }
-
-    /* ── Source bar ── */
-    .src-bar {
-      display: flex; align-items: center; gap: 0.5rem;
-      flex-wrap: wrap; margin-top: 0.6rem;
-      font-size: 0.75rem; color: var(--dim);
-    }
-    .src-btn {
-      padding: 0.28rem 0.75rem; border-radius: 100px;
-      font-size: 0.72rem; font-weight: 600;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--muted); cursor: pointer; transition: all var(--t);
-    }
-    .src-btn:hover  { border-color: var(--purple); color: var(--text); }
-    .src-btn.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
-
-    /* ── Nav hint ── */
-    .nav-hint {
-      background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2);
-      border-radius: var(--r-sm); padding: 0.55rem 0.9rem;
-      font-size: 0.78rem; color: var(--muted); margin-top: 0.7rem;
-      display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.5;
-    }
-  </style>
-</head>
-<body>
-
-<nav class="navbar">
-  <a href="database.html" class="nav-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
-  <ul class="nav-links">
-    <li><a href="database.html">Home</a></li>
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Watching — AnimeWeb</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+
+    /* ── Player ── */
+
+    .player-box {
+
+      position: relative;
+
+      width: 100%;
+
+      height: calc(100vh - 160px);
+
+      min-height: 520px;
+
+      background: #000;
+
+      border-radius: var(--r-lg);
+
+      overflow: hidden;
+
+      border: 1px solid var(--border);
+
+    }
+
+    .player-box iframe {
+
+      position: absolute; inset: 0;
+
+      width: 100%; height: 100%;
+
+      border: none;
+
+    }
+
+    .pill.fs-btn { margin-left: auto; }
+
+
+
+    /* ── Controls ── */
+
+    .ctrl-bar {
+
+      display: flex; align-items: center; flex-wrap: wrap;
+
+      gap: 0.6rem; margin: 0.85rem 0 0;
+
+    }
+
+    .ctrl-title { font-weight: 700; font-size: 0.9rem; flex: 1; min-width: 0;
+
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+
+    .pill-row { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+
+    .pill {
+
+      padding: 0.3rem 0.85rem; border-radius: 100px;
+
+      font-size: 0.75rem; font-weight: 600;
+
+      border: 1px solid var(--border); background: var(--card);
+
+      color: var(--muted); cursor: pointer; transition: all var(--t);
+
+    }
+
+    .pill:hover  { border-color: var(--purple); color: var(--text); }
+
+    .pill.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+
+    .pill:disabled { opacity: 0.35; pointer-events: none; }
+
+
+
+    /* ── Source bar ── */
+
+    .src-bar {
+
+      display: flex; align-items: center; gap: 0.5rem;
+
+      flex-wrap: wrap; margin-top: 0.6rem;
+
+      font-size: 0.75rem; color: var(--dim);
+
+    }
+
+    .src-btn {
+
+      padding: 0.28rem 0.75rem; border-radius: 100px;
+
+      font-size: 0.72rem; font-weight: 600;
+
+      border: 1px solid var(--border); background: var(--card);
+
+      color: var(--muted); cursor: pointer; transition: all var(--t);
+
+    }
+
+    .src-btn:hover  { border-color: var(--purple); color: var(--text); }
+
+    .src-btn.active { background: var(--purple-dk); border-color: var(--purple); color: #fff; }
+
+
+
+    /* ── Nav hint ── */
+
+    .nav-hint {
+
+      background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2);
+
+      border-radius: var(--r-sm); padding: 0.55rem 0.9rem;
+
+      font-size: 0.78rem; color: var(--muted); margin-top: 0.7rem;
+
+      display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.5;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+
+
+<nav class="navbar">
+
+  <a href="database.html" class="nav-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
+
+  <ul class="nav-links">
+
+    <li><a href="database.html">Home</a></li>
+
     <li><a href="movies.html">Movies</a></li>
-    <li><a href="database.html">Database</a></li>
-    <li><a href="watchlist.html">My List</a></li>
-    <li><a href="browse.html">Browse Free</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="#" id="backLink">← Back to Anime</a></li>
-  </ul>
-  <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime...">
-    <div class="search-drop" id="searchDrop"></div>
-  </div>
-</nav>
-
-<div class="page">
-  <div class="watch-layout">
-
-    <!-- MAIN COLUMN -->
-    <div class="watch-main">
-
-      <!-- Player -->
-      <div class="player-box" id="playerBox"></div>
-
-      <!-- Controls -->
-      <div class="ctrl-bar">
-        <div class="ctrl-title" id="ctrlTitle">Loading…</div>
-        <div class="pill-row">
-          <button class="pill" id="prevBtn" disabled>← Prev</button>
-          <button class="pill" id="nextBtn" disabled>Next →</button>
-          <button class="pill" id="refreshBtn" title="Reload player">↺ Retry</button>
-          <button class="pill fs-btn" id="fsBtn">⛶ Fullscreen</button>
-        </div>
-      </div>
-
-      <!-- Source switcher -->
-      <div class="src-bar">
-        <span>Source:</span>
-        <div id="srcBtnRow" class="pill-row"></div>
-      </div>
-
-      <!-- Navigation hint -->
-      <div class="nav-hint">
-        ⟐ If the video doesn't load, switch source above or hit ↺ Retry.
-      </div>
-
-    </div>
-
-    <!-- EPISODE SIDEBAR -->
-    <div class="ep-sidebar">
-      <div class="ep-sidebar-head">
-        <span>Episodes</span>
-        <span id="epCount">—</span>
-      </div>
-      <div class="ep-list" id="epList">
-        <div style="padding:2rem;text-align:center;color:var(--dim);font-size:0.85rem">Loading…</div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script src="app.js"></script>
-<script>
-// ─── Embed sources (confirmed embeddable 2026-05-20) ─────
-// 9anime, aniwave, hianime, animetsu: all 200 + no X-Frame-Options.
-// embtaku.pro redirects HTTP → browser blocks (mixed content).
-// All these sites are SPAs — navigation stays within the iframe.
-const SOURCES = [
-  {
-    name: 'AnimeLok',
-    color: '#a855f7',
-    url: (id, ep) => `https://animelok.online/watch/${id}?ep=${ep}`,
-  },
-  {
-    name: 'Animetsu',
-    color: '#ec4899',
-    url: (id, ep) => `https://animetsu.cc/watch/${id}?ep=${ep}`,
-  },
-];
-
-let animeId   = parseInt(P.get('id'));
-let curEp     = parseInt(P.get('ep')) || 1;
-let totalEps  = 0;
-let animeData = null;
-let srcIdx    = 0;
-
-if (!animeId) location.href = 'index.html';
-$('#backLink').href = `anime.html?id=${animeId}`;
-
-function buildSrcBtns() {
-  const row = $('#srcBtnRow');
-  if (!row) return;
-  row.innerHTML = '';
-  SOURCES.forEach((s, i) => {
-    const b = mk('button', `src-btn${i === srcIdx ? ' active' : ''}`, s.name);
-    b.addEventListener('click', () => { srcIdx = i; loadIframe(i); });
-    row.appendChild(b);
-  });
-}
-
-function loadIframe(idx) {
-  srcIdx = idx;
-  $$('.src-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
-  const box = $('#playerBox');
-  box.querySelector('iframe')?.remove();
-  const f = document.createElement('iframe');
-  f.src = SOURCES[idx].url(animeId, curEp);
-  f.allowFullscreen = true;
-  f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
-  box.appendChild(f);
-}
-
-function goEp(ep) {
-  if (ep < 1 || (totalEps > 0 && ep > totalEps)) return;
-  curEp = ep;
-  history.replaceState({}, '', `?id=${animeId}&ep=${ep}`);
-  updateNav();
-  updateTitle();
-  highlightSidebar();
-  loadIframe(srcIdx);
-  S.saveProgress(animeId, ep);
-  if (animeData) S.pushHistory(animeData, ep);
-}
-
-function updateNav() {
-  $('#prevBtn').disabled = curEp <= 1;
-  $('#nextBtn').disabled = totalEps > 0 && curEp >= totalEps;
-}
-function updateTitle() {
-  if (!animeData) return;
-  const t = animeData.title.english || animeData.title.romaji;
-  $('#ctrlTitle').textContent = `${t} · Episode ${curEp}`;
-  document.title = `Ep ${curEp} — ${t} — AnimeWeb`;
-}
-
-$('#prevBtn').addEventListener('click', () => goEp(curEp - 1));
-$('#nextBtn').addEventListener('click', () => goEp(curEp + 1));
-$('#refreshBtn').addEventListener('click', () => loadIframe(srcIdx));
-$('#fsBtn').addEventListener('click', () => {
-  const box = $('#playerBox');
-  (box.requestFullscreen || box.webkitRequestFullscreen || box.mozRequestFullScreen).call(box);
-});
-
-// Episode sidebar
-function buildSidebar(total) {
-  const prog = S.progress(animeId);
-  const done = prog.eps || [];
-  const list = $('#epList');
-  $('#epCount').textContent = `${total} eps`;
-  list.innerHTML = '';
-  for (let i = 1; i <= total; i++) {
-    const row = mk('div', `ep-row${i === curEp ? ' on' : ''}`);
-    row.dataset.ep = i;
-    row.innerHTML = `
-      <div class="ep-num">Ep ${i}</div>
-      <div>
-        <div class="ep-name">Episode ${i}</div>
-        <div class="ep-sub">${done.includes(i) ? '✓ Watched' : ''}</div>
-      </div>`;
-    row.addEventListener('click', () => goEp(i));
-    list.appendChild(row);
-  }
-  setTimeout(() => {
-    const a = $('.ep-row.on', list);
-    if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, 150);
-}
-function highlightSidebar() {
-  $$('.ep-row').forEach(r => r.classList.toggle('on', parseInt(r.dataset.ep) === curEp));
-  const a = $('.ep-row.on');
-  if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-}
-
-async function init() {
-  const data = await gql(Q.detail, { id: animeId });
-  animeData  = data.Media;
-  totalEps   = animeData.episodes
-    || (animeData.nextAiringEpisode ? animeData.nextAiringEpisode.episode - 1 : 50);
-  if (curEp < 1) curEp = 1;
-  if (totalEps && curEp > totalEps) curEp = totalEps;
-
-  buildSrcBtns();
-  updateNav();
-  updateTitle();
-  buildSidebar(totalEps);
-  loadIframe(srcIdx);
-  S.saveProgress(animeId, curEp);
-  S.pushHistory(animeData, curEp);
-}
-
-init().catch(err => {
-  console.error(err);
-  $('#ctrlTitle').textContent = '⚠ Failed to load';
-});
-</script>
-</body>
-</html>
+    <li><a href="database.html">Database</a></li>
+
+    <li><a href="watchlist.html">My List</a></li>
+
+    <li><a href="browse.html">Browse Free</a></li>
+
+    <li><a href="about.html">About</a></li>
+
+    <li><a href="#" id="backLink">← Back to Anime</a></li>
+
+  </ul>
+
+  <div class="nav-search">
+
+    <span class="search-icon">🔍</span>
+
+    <input type="text" id="navSearch" placeholder="Search anime...">
+
+    <div class="search-drop" id="searchDrop"></div>
+
+  </div>
+
+</nav>
+
+
+
+<div class="page">
+
+  <div class="watch-layout">
+
+
+
+    <!-- MAIN COLUMN -->
+
+    <div class="watch-main">
+
+
+
+      <!-- Player -->
+
+      <div class="player-box" id="playerBox"></div>
+
+
+
+      <!-- Controls -->
+
+      <div class="ctrl-bar">
+
+        <div class="ctrl-title" id="ctrlTitle">Loading…</div>
+
+        <div class="pill-row">
+
+          <button class="pill" id="prevBtn" disabled>← Prev</button>
+
+          <button class="pill" id="nextBtn" disabled>Next →</button>
+
+          <button class="pill" id="refreshBtn" title="Reload player">↺ Retry</button>
+
+          <button class="pill fs-btn" id="fsBtn">⛶ Fullscreen</button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Source switcher -->
+
+      <div class="src-bar">
+
+        <span>Source:</span>
+
+        <div id="srcBtnRow" class="pill-row"></div>
+
+      </div>
+
+
+
+      <!-- Navigation hint -->
+
+      <div class="nav-hint">
+
+        ⟐ If the video doesn't load, switch source above or hit ↺ Retry.
+
+      </div>
+
+
+
+    </div>
+
+
+
+    <!-- EPISODE SIDEBAR -->
+
+    <div class="ep-sidebar">
+
+      <div class="ep-sidebar-head">
+
+        <span>Episodes</span>
+
+        <span id="epCount">—</span>
+
+      </div>
+
+      <div class="ep-list" id="epList">
+
+        <div style="padding:2rem;text-align:center;color:var(--dim);font-size:0.85rem">Loading…</div>
+
+      </div>
+
+    </div>
+
+
+
+  </div>
+
+</div>
+
+
+
+<script src="app.js"></script>
+
+<script>
+
+// ─── Embed sources (confirmed embeddable 2026-05-20) ─────
+
+// 9anime, aniwave, hianime, animetsu: all 200 + no X-Frame-Options.
+
+// embtaku.pro redirects HTTP → browser blocks (mixed content).
+
+// All these sites are SPAs — navigation stays within the iframe.
+
+const SOURCES = [
+  {
+    name: 'AutoEmbed',
+    color: '#a855f7',
+    url: (id, ep) => `https://autoembed.cc/anime/anilist/${id}-${ep}`,
+  },
+  {
+    name: 'VidBinge',
+    color: '#3b82f6',
+    url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}`,
+  },
+  {
+    name: 'VidLink',
+    color: '#10b981',
+    url: (id, ep) => `https://vidlink.pro/anime/${id}/${ep}`,
+  },
+  {
+    name: 'VidSrc',
+    color: '#f59e0b',
+    url: (id, ep) => `https://vidsrc.dev/embed/anime?anilist=${id}&episode=${ep}`,
+  },
+];
+
+
+
+let animeId   = parseInt(P.get('id'));
+
+let curEp     = parseInt(P.get('ep')) || 1;
+
+let totalEps  = 0;
+
+let animeData = null;
+
+let srcIdx    = 0;
+
+
+
+if (!animeId) location.href = 'index.html';
+
+$('#backLink').href = `anime.html?id=${animeId}`;
+
+
+
+function buildSrcBtns() {
+
+  const row = $('#srcBtnRow');
+
+  if (!row) return;
+
+  row.innerHTML = '';
+
+  SOURCES.forEach((s, i) => {
+
+    const b = mk('button', `src-btn${i === srcIdx ? ' active' : ''}`, s.name);
+
+    b.addEventListener('click', () => { srcIdx = i; loadIframe(i); });
+
+    row.appendChild(b);
+
+  });
+
+}
+
+
+
+function loadIframe(idx) {
+
+  srcIdx = idx;
+
+  $$('.src-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+
+  const box = $('#playerBox');
+
+  box.querySelector('iframe')?.remove();
+
+  const f = document.createElement('iframe');
+
+  f.src = SOURCES[idx].url(animeId, curEp);
+
+  f.allowFullscreen = true;
+
+  f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
+
+  box.appendChild(f);
+
+}
+
+
+
+function goEp(ep) {
+
+  if (ep < 1 || (totalEps > 0 && ep > totalEps)) return;
+
+  curEp = ep;
+
+  history.replaceState({}, '', `?id=${animeId}&ep=${ep}`);
+
+  updateNav();
+
+  updateTitle();
+
+  highlightSidebar();
+
+  loadIframe(srcIdx);
+
+  S.saveProgress(animeId, ep);
+
+  if (animeData) S.pushHistory(animeData, ep);
+
+}
+
+
+
+function updateNav() {
+
+  $('#prevBtn').disabled = curEp <= 1;
+
+  $('#nextBtn').disabled = totalEps > 0 && curEp >= totalEps;
+
+}
+
+function updateTitle() {
+
+  if (!animeData) return;
+
+  const t = animeData.title.english || animeData.title.romaji;
+
+  $('#ctrlTitle').textContent = `${t} · Episode ${curEp}`;
+
+  document.title = `Ep ${curEp} — ${t} — AnimeWeb`;
+
+}
+
+
+
+$('#prevBtn').addEventListener('click', () => goEp(curEp - 1));
+
+$('#nextBtn').addEventListener('click', () => goEp(curEp + 1));
+
+$('#refreshBtn').addEventListener('click', () => loadIframe(srcIdx));
+
+$('#fsBtn').addEventListener('click', () => {
+
+  const box = $('#playerBox');
+
+  (box.requestFullscreen || box.webkitRequestFullscreen || box.mozRequestFullScreen).call(box);
+
+});
+
+
+
+// Episode sidebar
+
+function buildSidebar(total) {
+
+  const prog = S.progress(animeId);
+
+  const done = prog.eps || [];
+
+  const list = $('#epList');
+
+  $('#epCount').textContent = `${total} eps`;
+
+  list.innerHTML = '';
+
+  for (let i = 1; i <= total; i++) {
+
+    const row = mk('div', `ep-row${i === curEp ? ' on' : ''}`);
+
+    row.dataset.ep = i;
+
+    row.innerHTML = `
+
+      <div class="ep-num">Ep ${i}</div>
+
+      <div>
+
+        <div class="ep-name">Episode ${i}</div>
+
+        <div class="ep-sub">${done.includes(i) ? '✓ Watched' : ''}</div>
+
+      </div>`;
+
+    row.addEventListener('click', () => goEp(i));
+
+    list.appendChild(row);
+
+  }
+
+  setTimeout(() => {
+
+    const a = $('.ep-row.on', list);
+
+    if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+  }, 150);
+
+}
+
+function highlightSidebar() {
+
+  $$('.ep-row').forEach(r => r.classList.toggle('on', parseInt(r.dataset.ep) === curEp));
+
+  const a = $('.ep-row.on');
+
+  if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+}
+
+
+
+async function init() {
+
+  const data = await gql(Q.detail, { id: animeId });
+
+  animeData  = data.Media;
+
+  totalEps   = animeData.episodes
+
+    || (animeData.nextAiringEpisode ? animeData.nextAiringEpisode.episode - 1 : 50);
+
+  if (curEp < 1) curEp = 1;
+
+  if (totalEps && curEp > totalEps) curEp = totalEps;
+
+
+
+  buildSrcBtns();
+
+  updateNav();
+
+  updateTitle();
+
+  buildSidebar(totalEps);
+
+  loadIframe(srcIdx);
+
+  S.saveProgress(animeId, curEp);
+
+  S.pushHistory(animeData, curEp);
+
+}
+
+
+
+init().catch(err => {
+
+  console.error(err);
+
+  $('#ctrlTitle').textContent = '⚠ Failed to load';
+
+});
+
+</script>
+
+</body>
+
+</html>
+
