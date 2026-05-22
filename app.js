@@ -182,9 +182,16 @@ function card(a, extraCls = '') {
   const sep   = score && eps ? ' · ' : '';
 
   const saved = S.inWatchlist(a.id);
+  const prog  = S.progress(a.id);
+  const pct   = (a.episodes && prog.eps?.length) ? Math.round((prog.eps.length / a.episodes) * 100) : 0;
+  const progBar = pct > 0
+    ? `<div class="acard-prog"><div class="acard-prog-fill" style="width:${pct}%"></div></div>`
+    : '';
+
   const c = mk('div', `acard ${extraCls}`);
   c.innerHTML = `
     <img src="${img}" alt="" loading="lazy">
+    ${progBar}
     <div class="acard-info">
       <div class="acard-title">${title}</div>
       <div class="acard-meta">${score}${sep}${eps}</div>
@@ -273,3 +280,113 @@ function initSearch() {
 }
 
 document.addEventListener('DOMContentLoaded', initSearch);
+
+// ─── Episode tracking (notifications) ────────
+Object.assign(S, {
+  tracking()       { return this._get('as_track') || []; },
+  inTracking(id)   { return this.tracking().some(t => t.id === id); },
+  track(a) {
+    const list = this.tracking().filter(t => t.id !== a.id);
+    list.push({ id: a.id, title: a.title?.english || a.title?.romaji || 'Anime', lastNotif: 0 });
+    this._set('as_track', list);
+  },
+  untrack(id)      { this._set('as_track', this.tracking().filter(t => t.id !== id)); },
+  toggleTrack(a)   { this.inTracking(a.id) ? this.untrack(a.id) : this.track(a); },
+  setLastNotif(id) {
+    const list = this.tracking().map(t => t.id === id ? { ...t, lastNotif: Date.now() } : t);
+    this._set('as_track', list);
+  },
+});
+
+// ─── Service Worker registration ──────────────
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return null;
+  try {
+    const scope = location.pathname.includes('/anistream-site/') ? '/anistream-site/' : '/';
+    const reg = await navigator.serviceWorker.register(
+      location.pathname.includes('/anistream-site/') ? '/anistream-site/sw.js' : '/sw.js',
+      { scope }
+    );
+    return reg;
+  } catch (e) {
+    console.warn('[SW] registration failed:', e);
+    return null;
+  }
+}
+
+// ─── Notification helpers ─────────────────────
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+function sendNotif(title, body, url = '') {
+  const tag = 'animeweb-' + Date.now();
+  if (navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'NOTIFY', title, body, tag, url });
+  } else if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '/anistream-site/logo.svg' });
+  }
+}
+
+async function checkTrackedEpisodes() {
+  const tracked = S.tracking();
+  if (!tracked.length) return;
+
+  const idList = tracked.map(t => t.id);
+  const query = `query {
+    ${idList.map((id, i) => `a${i}: Media(id:${id},type:ANIME){ id nextAiringEpisode{ episode airingAt } }`).join('\n')}
+  }`;
+
+  try {
+    const data = await gql(query);
+    tracked.forEach((t, i) => {
+      const media = data[`a${i}`];
+      if (!media?.nextAiringEpisode) return;
+      const epNum  = media.nextAiringEpisode.episode;
+      const airsMs = media.nextAiringEpisode.airingAt * 1000;
+      // Notify if episode aired after last notification
+      if (Date.now() >= airsMs && airsMs > t.lastNotif) {
+        sendNotif(
+          `${t.title} — Episode ${epNum} is out!`,
+          'New episode available on streaming sites.',
+          `anime.html?id=${t.id}`
+        );
+        S.setLastNotif(t.id);
+      }
+    });
+  } catch (e) {
+    console.warn('[notif] check failed:', e);
+  }
+}
+
+// ─── Nyaa.si torrent search ───────────────────
+async function fetchNyaa(title) {
+  const q     = encodeURIComponent(title);
+  const nyaa  = `https://nyaa.si/?page=rss&q=${q}&c=1_2&f=0`;
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(nyaa)}`;
+  const r     = await fetch(proxy, { cache: 'no-cache' });
+  const j     = await r.json();
+  const xml   = new DOMParser().parseFromString(j.contents, 'text/xml');
+  return [...xml.querySelectorAll('item')].slice(0, 20).map(item => ({
+    title:   item.querySelector('title')?.textContent   || '',
+    magnet:  item.querySelector('torrent\\:magnetUri, magnetUri')?.textContent || '',
+    link:    item.querySelector('link')?.textContent    || '',
+    seeders: item.querySelector('nyaa\\:seeders, seeders')?.textContent       || '?',
+    leechers:item.querySelector('nyaa\\:leechers, leechers')?.textContent     || '?',
+    size:    item.querySelector('nyaa\\:size, size')?.textContent             || '',
+    date:    item.querySelector('pubDate')?.textContent || '',
+  }));
+}
+
+// ─── Progress bar CSS injection ───────────────
+(function injectProgressCSS() {
+  const s = document.createElement('style');
+  s.textContent = `
+    .acard-prog { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(0,0,0,.4); }
+    .acard-prog-fill { height:100%; background:var(--purple); border-radius:0 2px 2px 0; transition:width .3s; }
+  `;
+  document.head.appendChild(s);
+})();

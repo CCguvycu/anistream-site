@@ -58,6 +58,30 @@
     .rel-type  { font-size: 0.65rem; color: var(--purple-lt); margin-top: 1px; }
 
     .section-h { font-size: 1rem; font-weight: 700; margin: 1.75rem 0 0.85rem; }
+
+    /* ── Nyaa torrents ── */
+    .nyaa-list { display:flex; flex-direction:column; gap:.5rem; margin-top:.75rem; }
+    .nyaa-item {
+      background:var(--card); border:1px solid var(--border); border-radius:8px;
+      padding:.6rem .85rem; display:flex; align-items:center; gap:.75rem;
+      transition:border-color var(--t);
+    }
+    .nyaa-item:hover { border-color:var(--purple); }
+    .nyaa-title { flex:1; font-size:.78rem; font-weight:500; line-height:1.4; min-width:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
+    .nyaa-seeds { font-size:.72rem; color:#4ade80; font-weight:700; flex-shrink:0; }
+    .nyaa-size  { font-size:.7rem; color:var(--dim); flex-shrink:0; }
+    .nyaa-mag   { font-size:.75rem; padding:.28rem .7rem; border-radius:6px; background:rgba(168,85,247,.15); color:var(--purple-lt); text-decoration:none; flex-shrink:0; font-weight:600; transition:background var(--t); }
+    .nyaa-mag:hover { background:rgba(168,85,247,.28); }
+    .nyaa-state { color:var(--dim); font-size:.82rem; padding:.5rem 0; }
+
+    /* ── Track bell ── */
+    .btn-track {
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.45rem 1rem; border-radius:8px; font-size:.82rem; font-weight:600;
+      border:1px solid var(--border); background:var(--card); color:var(--muted);
+      cursor:pointer; transition:all var(--t);
+    }
+    .btn-track:hover, .btn-track.on { border-color:var(--purple); color:var(--purple-lt); background:rgba(168,85,247,.1); }
   </style>
 </head>
 <body>
@@ -153,6 +177,7 @@
         <div style="display:flex;gap:0.65rem;flex-wrap:wrap;margin-top:0.75rem">
           <button class="btn btn-primary" onclick="P.go('watch.html',{id:${a.id},ep:${watchEp}})">${watchLabel}</button>
           <button class="btn btn-ghost" id="wlBtn">${S.inWatchlist(animeId) ? '♥ Saved' : '♡ My List'}</button>
+          <button class="btn-track${S.inTracking(animeId) ? ' on' : ''}" id="trackBtn">🔔 ${S.inTracking(animeId) ? 'Tracking' : 'Notify me'}</button>
         </div>
       </div>`;
 
@@ -161,6 +186,17 @@
       const saved = S.inWatchlist(animeId);
       $('#wlBtn').textContent = saved ? '♥ Saved' : '♡ My List';
       toast(saved ? 'Added to My List' : 'Removed from My List');
+    });
+
+    // ── Track bell ──
+    $('#trackBtn').addEventListener('click', async () => {
+      const granted = await requestNotifPermission();
+      if (!granted) { toast('Allow notifications in browser settings first'); return; }
+      S.toggleTrack(a);
+      const on = S.inTracking(animeId);
+      $('#trackBtn').textContent = `🔔 ${on ? 'Tracking' : 'Notify me'}`;
+      $('#trackBtn').classList.toggle('on', on);
+      toast(on ? '🔔 Episode alerts on' : 'Notifications off');
     });
 
     // ── Synopsis ──
@@ -187,6 +223,7 @@
     // ── Episodes ──
     const totalEps = a.episodes || (a.nextAiringEpisode ? a.nextAiringEpisode.episode - 1 : 0);
     mainHTML += `<div id="epsSection" style="margin-top:1.75rem"></div>`;
+    mainHTML += `<div id="nyaaSection"></div>`;
 
     // ── Characters ──
     const chars = a.characters?.nodes?.filter(c => c.image?.large) || [];
@@ -247,6 +284,33 @@
         </div>`;
     }
 
+    // ── Nyaa torrents ──
+    (async () => {
+      const nyaaEl = $('#nyaaSection');
+      if (!nyaaEl) return;
+      nyaaEl.innerHTML = `<h3 class="section-h">Torrents <span style="font-size:.7rem;color:var(--dim);font-weight:400">via Nyaa.si</span></h3><div class="nyaa-state">Searching…</div>`;
+      try {
+        const results = await fetchNyaa(title);
+        if (!results.length) {
+          nyaaEl.querySelector('.nyaa-state').textContent = 'No results found on Nyaa.si';
+          return;
+        }
+        const list = results.map(t => {
+          const mag = t.magnet ? `<a class="nyaa-mag" href="${t.magnet}">⇩ Magnet</a>` :
+                      t.link   ? `<a class="nyaa-mag" href="${t.link}" target="_blank">↗ Link</a>` : '';
+          return `<div class="nyaa-item">
+            <div class="nyaa-title" title="${t.title}">${t.title}</div>
+            <span class="nyaa-seeds">▲ ${t.seeders}</span>
+            <span class="nyaa-size">${t.size}</span>
+            ${mag}
+          </div>`;
+        }).join('');
+        nyaaEl.innerHTML = `<h3 class="section-h">Torrents <span style="font-size:.7rem;color:var(--dim);font-weight:400">via Nyaa.si · ${results.length} results</span></h3><div class="nyaa-list">${list}</div>`;
+      } catch {
+        nyaaEl.querySelector('.nyaa-state').textContent = 'Nyaa search failed — try again later.';
+      }
+    })();
+
     // ── Sidebar ──
     $('#sideCol').innerHTML = `
       <div class="info-box">
@@ -282,6 +346,7 @@
     }
   }
 
+  registerSW();
   load().catch(err => {
     console.error(err);
     $('#detailHead').innerHTML = `

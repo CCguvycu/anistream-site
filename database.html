@@ -6,6 +6,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AnimeWeb — Full Library</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── Next Up strip ───────────────────────────────────────── */
+    .nextup-section { max-width:1400px; margin-inline:auto; padding:2rem 2rem 0; }
+    .nextup-row { display:flex; gap:.85rem; overflow-x:auto; scrollbar-width:none; padding-bottom:.75rem; }
+    .nextup-row::-webkit-scrollbar { display:none; }
+    .nextup-card {
+      flex:0 0 200px; background:var(--card); border:1px solid var(--border);
+      border-radius:10px; overflow:hidden; cursor:pointer; transition:all var(--t);
+      display:flex; align-items:center; gap:.7rem; padding:.55rem .7rem;
+    }
+    .nextup-card:hover { border-color:var(--purple); transform:translateY(-2px); }
+    .nextup-thumb { width:46px; height:64px; object-fit:cover; border-radius:6px; flex-shrink:0; background:var(--card-hover); }
+    .nextup-info { flex:1; min-width:0; }
+    .nextup-title { font-size:.75rem; font-weight:700; line-height:1.3; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+    .nextup-ep { font-size:.68rem; color:var(--purple-lt); margin-top:.25rem; font-weight:600; }
+    .nextup-prog { height:2px; background:var(--border); border-radius:2px; margin-top:.4rem; overflow:hidden; }
+    .nextup-prog-fill { height:100%; background:var(--purple); border-radius:2px; }
+
+    /* ── Notification bell ───────────────────────────────────── */
+    .notif-bell {
+      background:none; border:1px solid var(--border); color:var(--muted);
+      border-radius:8px; padding:.3rem .6rem; cursor:pointer; font-size:.9rem;
+      transition:all var(--t); flex-shrink:0;
+    }
+    .notif-bell:hover, .notif-bell.on { border-color:var(--purple); color:var(--purple-lt); }
+    .notif-bell.on { background:rgba(168,85,247,.1); }
+  </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ── Now Airing strip ─────────────────────────────────────────────────── */
@@ -242,12 +269,22 @@
     <li><a href="watchlist.html">My List</a></li>
     <li><a href="browse.html">Browse Free</a></li>
   </ul>
+  <button class="notif-bell" id="notifBell" title="Episode notifications">🔔</button>
   <div class="nav-search">
     <span class="search-icon">🔍</span>
     <input type="text" id="navSearch" placeholder="Search anime...">
     <div class="search-drop" id="searchDrop"></div>
   </div>
 </nav>
+
+<!-- ── Next Up ─────────────────────────────────────────────────────────────── -->
+<div class="nextup-section" id="nextupSection" style="display:none">
+  <div class="strip-head" style="margin-bottom:.9rem">
+    <span class="strip-title">▶ Next Up</span>
+    <span class="strip-sub">continue watching</span>
+  </div>
+  <div class="nextup-row" id="nextupRow"></div>
+</div>
 
 <!-- ── Now Airing ──────────────────────────────────────────────────────────── -->
 <div class="airing-section">
@@ -613,6 +650,74 @@ function startRefreshTimer() {
   }, 1000);
 }
 
+// ── Service Worker + Notifications ───────────────────────────────────────────
+registerSW().then(() => {
+  checkTrackedEpisodes();
+  setInterval(checkTrackedEpisodes, 30 * 60 * 1000); // every 30 min
+});
+
+// Bell toggle
+const bell = document.getElementById('notifBell');
+function updateBell() {
+  const on = Notification.permission === 'granted' && S.tracking().length > 0;
+  bell.classList.toggle('on', on);
+  bell.title = on ? `Tracking ${S.tracking().length} anime` : 'Enable episode notifications';
+}
+bell.addEventListener('click', async () => {
+  const granted = await requestNotifPermission();
+  if (!granted) { toast('Enable notifications in your browser settings'); return; }
+  toast('Notifications on — track anime from their detail page 🔔');
+  updateBell();
+});
+updateBell();
+
+// ── Next Up strip ─────────────────────────────────────────────────────────────
+function buildNextUp() {
+  const history = S.history();   // [{id, ep, title, img}]
+  const tracked = S.tracking();  // [{id, title}]
+
+  // Merge: history entries that have more to watch, plus tracked
+  const seen = new Set();
+  const items = [];
+
+  history.forEach(h => {
+    if (seen.has(h.id)) return;
+    seen.add(h.id);
+    items.push(h);
+  });
+  tracked.forEach(t => {
+    if (seen.has(t.id)) return;
+    seen.add(t.id);
+    items.push({ id: t.id, title: t.title, img: '', ep: 0 });
+  });
+
+  if (!items.length) return;
+
+  const section = document.getElementById('nextupSection');
+  const row     = document.getElementById('nextupRow');
+  section.style.display = '';
+  row.innerHTML = '';
+
+  items.slice(0, 12).forEach(h => {
+    const prog     = S.progress(h.id);
+    const nextEp   = (prog.last || 0) + 1;
+    const watched  = prog.eps?.length || 0;
+
+    const card = document.createElement('div');
+    card.className = 'nextup-card';
+    card.innerHTML = `
+      <img class="nextup-thumb" src="${h.img || ''}" alt="" onerror="this.style.opacity=.3">
+      <div class="nextup-info">
+        <div class="nextup-title">${h.title}</div>
+        <div class="nextup-ep">Ep ${nextEp}</div>
+        ${watched > 0 ? `<div class="nextup-prog"><div class="nextup-prog-fill" style="width:${Math.min(watched*10,100)}%"></div></div>` : ''}
+      </div>`;
+    card.addEventListener('click', () => P.go('watch.html', { id: h.id, ep: nextEp }));
+    row.appendChild(card);
+  });
+}
+
+buildNextUp();
 buildSiteLauncher();
 loadScrape();
 startRefreshTimer();
