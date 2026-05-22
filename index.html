@@ -273,8 +273,9 @@
 
     ['initialDRow','seasonRow','newRow','trendingRow','popularRow','topRatedRow'].forEach(id => skels($(`#${id}`), 9));
 
-    const INITIAL_D_IDS = [169, 170, 172, 1392, 9717, 14139, 20465, 20466, 20467];
+    const INITIAL_D_IDS = [185, 186, 187, 18, 15059, 19613, 20842, 20990, 21289];
     const initialDQuery = `query($ids:[Int]){ Page(page:1,perPage:20){ media(id_in:$ids,type:ANIME){ id title{romaji english} coverImage{extraLarge large} episodes averageScore format } } }`;
+    sessionStorage.removeItem('initialD'); // clear stale cache
 
     // First batch: hero-critical + Initial D together
     const [trending, initialD] = await Promise.all([
