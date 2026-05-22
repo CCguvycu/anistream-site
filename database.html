@@ -392,8 +392,7 @@ async function init() {
   } catch {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--muted)">
       <div style="font-size:2rem;margin-bottom:.75rem">⚠</div>
-      <p>Serve the site from a local server to load the catalog.</p>
-      <code style="font-size:.75rem;color:var(--dim)">python -m http.server 8080</code>
+      <p>Could not load catalog — retrying…</p>
     </div>`;
   }
 }
