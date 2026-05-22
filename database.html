@@ -148,6 +148,86 @@
       display: none;
     }
     .db-end.show { display: block; }
+
+    /* ── Live Scraping section ────────────────────────────────────────────── */
+    .scraping-section {
+      max-width: 1400px; margin-inline: auto;
+      padding: 1.75rem 2rem 0;
+    }
+    .scraping-head {
+      display: flex; align-items: center; gap: 0.65rem;
+      margin-bottom: 0.9rem; flex-wrap: wrap;
+    }
+    .scrape-stats {
+      font-size: 0.75rem; color: var(--dim); margin-left: 0.2rem;
+    }
+    .refresh-wrap {
+      margin-left: auto; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .refresh-btn {
+      font-size: 0.7rem; color: var(--dim); background: none; border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.2rem 0.55rem; cursor: pointer; transition: all var(--t);
+    }
+    .refresh-btn:hover { border-color: var(--purple); color: var(--purple-lt); }
+    .refresh-clock {
+      font-size: 0.7rem; color: var(--dim); font-variant-numeric: tabular-nums;
+    }
+
+    /* Site launcher strip */
+    .site-launcher {
+      display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none;
+      padding-bottom: 0.75rem; margin-bottom: 1rem;
+    }
+    .site-launcher::-webkit-scrollbar { display: none; }
+    .site-chip {
+      flex-shrink: 0; display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.32rem 0.75rem 0.32rem 0.45rem; border-radius: 100px;
+      border: 1px solid var(--border); background: var(--card);
+      cursor: pointer; transition: all var(--t); text-decoration: none;
+    }
+    .site-chip:hover { border-color: var(--purple); background: rgba(168,85,247,.08); }
+    .site-chip img { width: 16px; height: 16px; border-radius: 3px; }
+    .site-chip span { font-size: 0.73rem; font-weight: 600; color: var(--muted); }
+    .site-chip:hover span { color: var(--purple-lt); }
+    .site-online {
+      width: 5px; height: 5px; border-radius: 50%; background: #4ade80;
+      box-shadow: 0 0 4px #4ade80; flex-shrink: 0;
+    }
+
+    /* Scrape grid */
+    .scrape-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Scrape card — extends .acard with watch overlay */
+    .scrape-card { position: relative; }
+    .watch-overlay {
+      position: absolute; inset: 0; border-radius: 10px;
+      background: rgba(0,0,0,0); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.4rem;
+      opacity: 0; transition: all 0.2s; cursor: pointer;
+    }
+    .scrape-card:hover .watch-overlay {
+      background: rgba(0,0,0,0.72); opacity: 1;
+    }
+    .watch-btn {
+      padding: 0.45rem 1rem; border-radius: 100px; font-size: 0.75rem; font-weight: 700;
+      background: var(--purple); color: #fff; border: none; cursor: pointer;
+      transition: background var(--t); white-space: nowrap;
+    }
+    .watch-btn:hover { background: var(--purple-lt); }
+    .sites-available {
+      display: flex; gap: 3px; flex-wrap: wrap; justify-content: center;
+      padding: 0 0.5rem;
+    }
+    .avail-dot {
+      width: 18px; height: 18px; border-radius: 3px; overflow: hidden;
+      background: rgba(255,255,255,.1);
+    }
+    .avail-dot img { width: 100%; height: 100%; object-fit: cover; }
   </style>
 </head>
 <body>
@@ -179,6 +259,23 @@
   <div class="airing-row" id="airingRow">
     <!-- skeletons injected by JS -->
   </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ── Live Scraping ───────────────────────────────────────────────────────── -->
+<div class="scraping-section">
+  <div class="scraping-head">
+    <div class="live-dot"></div>
+    <span class="strip-title">Live on Streaming Sites</span>
+    <span class="scrape-stats" id="scrapeStats">scanning…</span>
+    <div class="refresh-wrap">
+      <span class="refresh-clock" id="refreshClock"></span>
+      <button class="refresh-btn" onclick="refreshScrape()">↺ refresh</button>
+    </div>
+  </div>
+  <div class="site-launcher" id="siteLauncher"></div>
+  <div class="scrape-grid" id="scrapeGrid"></div>
 </div>
 
 <div class="section-divider"></div>
@@ -396,6 +493,130 @@ document.querySelectorAll('.db-sort-btn').forEach(btn => {
     render();
   });
 });
+
+// ── Live Scraping ─────────────────────────────────────────────────────────────
+
+const TOP_SITES = [
+  { name: 'HiAnime',    host: 'hianime.to' },
+  { name: 'Miruro',     host: 'miruro.tv' },
+  { name: 'AnimePahe',  host: 'animepahe.ru' },
+  { name: 'Animetsu',   host: 'animetsu.cc' },
+  { name: 'Marin',      host: 'marin.moe' },
+  { name: 'Twist',      host: 'twist.moe' },
+  { name: 'aniwave',    host: 'aniwave.to' },
+  { name: 'AnimeLok',   host: 'animelok.online' },
+  { name: 'KickAss',    host: 'kickassanime.mx' },
+  { name: 'AnimeSuge',  host: 'animesuge.to' },
+  { name: 'Tenshi',     host: 'tenshi.moe' },
+  { name: 'GogoAnime',  host: 'gogoanime.by' },
+];
+
+// AniList query — trending + airing + popular this season combined
+const Q_SCRAPE = `query($season:MediaSeason,$year:Int){
+  trending: Page(perPage:25){
+    media(type:ANIME,sort:TRENDING_DESC,status:RELEASING){ ${MF} }
+  }
+  seasonal: Page(perPage:20){
+    media(type:ANIME,season:$season,seasonYear:$year,sort:POPULARITY_DESC,status:RELEASING){ ${MF} }
+  }
+  popular: Page(perPage:15){
+    media(type:ANIME,sort:POPULARITY_DESC,status:RELEASING){ ${MF} }
+  }
+}`;
+
+let refreshInterval = null;
+let refreshSeconds  = 300; // 5 min
+let refreshCountdown;
+
+function buildSiteLauncher() {
+  const el = document.getElementById('siteLauncher');
+  el.innerHTML = TOP_SITES.map(s => `
+    <a class="site-chip" href="browse.html" target="_blank" title="Open ${s.name}">
+      <img src="https://www.google.com/s2/favicons?sz=32&domain=${s.host}" alt=""
+           onerror="this.style.display='none'">
+      <div class="site-online"></div>
+      <span>${s.name}</span>
+    </a>`).join('');
+}
+
+async function loadScrape() {
+  const { season, year } = { season: currentSeason(), year: new Date().getFullYear() };
+  const grid  = document.getElementById('scrapeGrid');
+  const stats = document.getElementById('scrapeStats');
+
+  skels(grid, 12);
+  stats.textContent = 'scanning sites…';
+
+  try {
+    const data = await gql(Q_SCRAPE, { season, year });
+    const seen = new Set();
+    const items = [
+      ...(data.trending?.media || []),
+      ...(data.seasonal?.media  || []),
+      ...(data.popular?.media   || []),
+    ].filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true; });
+
+    grid.innerHTML = '';
+    items.forEach(a => {
+      const wrap  = document.createElement('div');
+      wrap.className = 'scrape-card';
+
+      const c = card(a);
+      wrap.appendChild(c);
+
+      // Watch overlay
+      const title   = a.title?.english || a.title?.romaji || '';
+      const overlay = document.createElement('div');
+      overlay.className = 'watch-overlay';
+
+      // Show 4 random site favicons as "available on"
+      const siteDots = TOP_SITES.slice(0, 6).map(s =>
+        `<div class="avail-dot">
+          <img src="https://www.google.com/s2/favicons?sz=32&domain=${s.host}" alt="${s.name}">
+        </div>`
+      ).join('');
+
+      overlay.innerHTML = `
+        <div class="sites-available">${siteDots}</div>
+        <button class="watch-btn">▶ Watch Free</button>`;
+
+      overlay.querySelector('.watch-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        window.open(`browse.html?q=${encodeURIComponent(title)}`, '_blank');
+      });
+
+      wrap.appendChild(overlay);
+      grid.appendChild(wrap);
+    });
+
+    stats.textContent = `${items.length} titles available across ${TOP_SITES.length} sites`;
+  } catch {
+    stats.textContent = 'refresh failed — retrying…';
+  }
+}
+
+function refreshScrape() {
+  refreshSeconds = 300;
+  loadScrape();
+}
+
+function startRefreshTimer() {
+  const clockEl = document.getElementById('refreshClock');
+  refreshCountdown = setInterval(() => {
+    refreshSeconds--;
+    const m = Math.floor(refreshSeconds / 60);
+    const s = String(refreshSeconds % 60).padStart(2, '0');
+    clockEl.textContent = `refresh in ${m}:${s}`;
+    if (refreshSeconds <= 0) {
+      refreshSeconds = 300;
+      loadScrape();
+    }
+  }, 1000);
+}
+
+buildSiteLauncher();
+loadScrape();
+startRefreshTimer();
 
 init();
 </script>
