@@ -113,6 +113,16 @@
   <!-- Genre bar -->
   <div class="genre-bar" id="genreBar"></div>
 
+  <!-- Initial D Feature -->
+  <div class="section-row" style="border:1px solid rgba(168,85,247,0.25);border-radius:var(--r-lg);padding:1.25rem;background:linear-gradient(135deg,rgba(168,85,247,0.06) 0%,transparent 100%);margin-bottom:2.5rem">
+    <div class="section-row-head">
+      <span class="section-row-title">🚗 Initial D — Complete Series</span>
+      <a href="browse.html?q=Initial%20D" class="section-row-more">Watch →</a>
+    </div>
+    <div style="font-size:0.78rem;color:var(--dim);margin-bottom:1rem">The legendary street racing anime. All stages, from First to Final.</div>
+    <div class="card-row" id="initialDRow"></div>
+  </div>
+
   <!-- This Season -->
   <div class="section-row">
     <div class="section-row-head">
@@ -261,7 +271,19 @@
     const year   = new Date().getFullYear();
     $('#seasonLabel').textContent = `${SEASON_ICONS[season]} ${season[0]}${season.slice(1).toLowerCase()} ${year}`;
 
-    ['seasonRow','newRow','trendingRow','popularRow','topRatedRow'].forEach(id => skels($(`#${id}`), 12));
+    ['initialDRow','seasonRow','newRow','trendingRow','popularRow','topRatedRow'].forEach(id => skels($(`#${id}`), 9));
+
+    // Initial D — all stages in order
+    const INITIAL_D_IDS = [169, 170, 172, 1392, 9717, 14139, 20465, 20466, 20467];
+    const initialDQuery = `query($ids:[Int]){ Page(page:1,perPage:20){ media(id_in:$ids,type:ANIME){ id title{romaji english} coverImage{extraLarge large} episodes averageScore format } } }`;
+    cachedGql('initialD', initialDQuery, { ids: INITIAL_D_IDS }).then(d => {
+      const row = $('#initialDRow');
+      const mediaMap = {};
+      d.Page.media.forEach(m => { mediaMap[m.id] = m; });
+      INITIAL_D_IDS.forEach(id => {
+        if (mediaMap[id]) row.appendChild(showcaseCard(mediaMap[id]));
+      });
+    }).catch(() => {});
 
     // Load hero + trending first for fast above-the-fold render
     const trending = await cachedGql('trending', Q.trending);
