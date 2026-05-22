@@ -273,20 +273,15 @@
 
     ['initialDRow','seasonRow','newRow','trendingRow','popularRow','topRatedRow'].forEach(id => skels($(`#${id}`), 9));
 
-    // Initial D — all stages in order
     const INITIAL_D_IDS = [169, 170, 172, 1392, 9717, 14139, 20465, 20466, 20467];
     const initialDQuery = `query($ids:[Int]){ Page(page:1,perPage:20){ media(id_in:$ids,type:ANIME){ id title{romaji english} coverImage{extraLarge large} episodes averageScore format } } }`;
-    cachedGql('initialD', initialDQuery, { ids: INITIAL_D_IDS }).then(d => {
-      const row = $('#initialDRow');
-      const mediaMap = {};
-      d.Page.media.forEach(m => { mediaMap[m.id] = m; });
-      INITIAL_D_IDS.forEach(id => {
-        if (mediaMap[id]) row.appendChild(showcaseCard(mediaMap[id]));
-      });
-    }).catch(() => {});
 
-    // Load hero + trending first for fast above-the-fold render
-    const trending = await cachedGql('trending', Q.trending);
+    // First batch: hero-critical + Initial D together
+    const [trending, initialD] = await Promise.all([
+      cachedGql('trending', Q.trending),
+      cachedGql('initialD', initialDQuery, { ids: INITIAL_D_IDS }),
+    ]);
+
     heroAnime = trending.Page.media.filter(a => a.bannerImage || a.coverImage?.extraLarge).slice(0, 5);
     if (heroAnime.length) {
       setHero(heroAnime[0]);
@@ -295,7 +290,13 @@
     }
     fillRow($('#trendingRow'), trending.Page.media);
 
-    // Load remaining rows in parallel after hero is painted
+    const idRow = $('#initialDRow');
+    idRow.innerHTML = '';
+    const mediaMap = {};
+    initialD.Page.media.forEach(m => { mediaMap[m.id] = m; });
+    INITIAL_D_IDS.forEach(id => { if (mediaMap[id]) idRow.appendChild(showcaseCard(mediaMap[id])); });
+
+    // Second batch: remaining rows
     const [seasonal, newRel, popular, topRated] = await Promise.all([
       cachedGql(`seasonal-${season}-${year}`, Q.seasonal, { season, year }),
       cachedGql('newReleases', Q.newReleases),
