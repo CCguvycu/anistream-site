@@ -138,6 +138,41 @@
     .no-sites {
       text-align: center; padding: 2rem 1rem; color: var(--dim); font-size: 0.8rem;
     }
+
+    /* ── Remove / restore ─────────────────────────────────────────────────── */
+    .site-remove {
+      margin-left: auto; background: none; border: none; color: var(--dim);
+      font-size: 0.85rem; cursor: pointer; padding: 0.2rem 0.35rem;
+      border-radius: 5px; line-height: 1; flex-shrink: 0;
+      opacity: 0; transition: opacity 0.15s, color 0.15s;
+    }
+    .site-card:hover .site-remove { opacity: 1; }
+    .site-remove:hover { color: #f87171; }
+
+    .site-restore {
+      margin-left: auto; background: none; border: none;
+      color: var(--purple-lt); font-size: 0.75rem; cursor: pointer;
+      padding: 0.2rem 0.4rem; border-radius: 5px; flex-shrink: 0;
+      font-weight: 600; transition: background 0.15s;
+    }
+    .site-restore:hover { background: rgba(168,85,247,0.15); }
+
+    .hidden-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.3rem 0.85rem 0.5rem; font-size: 0.72rem;
+    }
+    .hidden-bar-count {
+      color: var(--dim); cursor: pointer; transition: color var(--t);
+    }
+    .hidden-bar-count:hover, .hidden-bar-count.active { color: var(--purple-lt); }
+    .hidden-bar-reset {
+      background: none; border: none; color: var(--dim); font-size: 0.7rem;
+      cursor: pointer; padding: 0; transition: color var(--t);
+    }
+    .hidden-bar-reset:hover { color: #f87171; }
+
+    .site-card.is-hidden { opacity: 0.5; }
+    .site-card.is-hidden .site-name { text-decoration: line-through; }
   </style>
 </head>
 <body>
@@ -164,6 +199,10 @@
     </div>
     <div class="cat-row" id="catRow"></div>
     <div class="site-count" id="siteCount"></div>
+    <div class="hidden-bar" id="hiddenBar" style="display:none">
+      <span class="hidden-bar-count" id="hiddenCount" onclick="toggleShowHidden()"></span>
+      <button class="hidden-bar-reset" onclick="restoreAll()" title="Restore all hidden sites">Restore all</button>
+    </div>
     <div class="site-list" id="siteList"></div>
   </div>
 
@@ -306,10 +345,71 @@ const TAG_CLASS = {
   official: 'tag-official', manga: 'tag-manga',
 };
 
-let curCat     = 'all';
-let curSearch  = '';
-let curSiteIdx = -1;
-let panelOpen  = true;
+let curCat      = 'all';
+let curSearch   = '';
+let curSiteIdx  = -1;
+let panelOpen   = true;
+let showHidden  = false;
+
+// ── Hidden sites (persisted by name) ─────────────────────────────────────────
+const hidden = new Set(JSON.parse(localStorage.getItem('aw_hidden') || '[]'));
+
+function saveHidden() {
+  localStorage.setItem('aw_hidden', JSON.stringify([...hidden]));
+}
+
+function hideSite(name) {
+  hidden.add(name);
+  saveHidden();
+  renderList();
+
+  // Undo toast
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `${name} hidden &nbsp;<span style="color:var(--purple-lt);cursor:pointer;font-weight:700" id="undoBtn">Undo</span>`;
+  document.body.appendChild(t);
+  const undo = t.querySelector('#undoBtn');
+  const timer = setTimeout(() => t.remove(), 4000);
+  undo.addEventListener('click', () => {
+    clearTimeout(timer);
+    t.remove();
+    hidden.delete(name);
+    saveHidden();
+    renderList();
+  });
+}
+
+function restoreSite(name) {
+  hidden.delete(name);
+  saveHidden();
+  renderList();
+}
+
+function restoreAll() {
+  hidden.clear();
+  saveHidden();
+  showHidden = false;
+  renderList();
+}
+
+function toggleShowHidden() {
+  showHidden = !showHidden;
+  document.getElementById('hiddenCount').classList.toggle('active', showHidden);
+  renderList();
+}
+
+function updateHiddenBar() {
+  const bar   = document.getElementById('hiddenBar');
+  const count = document.getElementById('hiddenCount');
+  if (hidden.size === 0) {
+    bar.style.display = 'none';
+    showHidden = false;
+  } else {
+    bar.style.display = 'flex';
+    count.textContent = `${showHidden ? '▾' : '▸'} Hidden (${hidden.size})`;
+    count.classList.toggle('active', showHidden);
+  }
+}
 
 const frame       = document.getElementById('frame');
 const siteList    = document.getElementById('siteList');
@@ -318,7 +418,7 @@ const siteSearch  = document.getElementById('siteSearch');
 const topSiteName = document.getElementById('topSiteName');
 const toggleBtn   = document.getElementById('toggleBtn');
 
-// ── Build category pills ──────────────────────────────────────────────────────
+// ── Category pills ────────────────────────────────────────────────────────────
 const catRow = document.getElementById('catRow');
 CATS.forEach(c => {
   const btn = document.createElement('button');
@@ -344,19 +444,28 @@ function renderList() {
   let items = SITES.map((s, i) => ({ ...s, idx: i }));
   if (curCat === 'top')      items = items.filter(s => s.top);
   else if (curCat !== 'all') items = items.filter(s => s.tag === curCat);
-  if (curSearch) items = items.filter(s => s.name.toLowerCase().includes(curSearch));
+  if (curSearch)             items = items.filter(s => s.name.toLowerCase().includes(curSearch));
 
-  siteCount.textContent = `${items.length} site${items.length !== 1 ? 's' : ''}`;
+  // Split into visible and hidden
+  const visible = items.filter(s => !hidden.has(s.name));
+  const hiddenItems = items.filter(s => hidden.has(s.name));
 
-  if (!items.length) {
-    siteList.innerHTML = '<div class="no-sites">No sites found</div>';
+  const displayItems = showHidden ? hiddenItems : visible;
+  siteCount.textContent = `${visible.length} site${visible.length !== 1 ? 's' : ''}`;
+  updateHiddenBar();
+
+  if (!displayItems.length) {
+    siteList.innerHTML = showHidden
+      ? '<div class="no-sites">No hidden sites in this category</div>'
+      : '<div class="no-sites">No sites found</div>';
     return;
   }
 
   siteList.innerHTML = '';
-  items.forEach(s => {
+  displayItems.forEach(s => {
+    const isHidden = hidden.has(s.name);
     const card = document.createElement('div');
-    card.className = 'site-card' + (s.idx === curSiteIdx ? ' active' : '');
+    card.className = `site-card${s.idx === curSiteIdx ? ' active' : ''}${isHidden ? ' is-hidden' : ''}`;
     card.dataset.idx = s.idx;
 
     const host = new URL(s.url).hostname;
@@ -369,9 +478,25 @@ function renderList() {
       <div class="site-info">
         <div class="site-name">${s.name}</div>
       </div>
-      <span class="site-tag ${TAG_CLASS[s.tag] || 'tag-sub'}">${s.tag}</span>`;
+      <span class="site-tag ${TAG_CLASS[s.tag] || 'tag-sub'}">${s.tag}</span>
+      ${isHidden
+        ? `<button class="site-restore" title="Restore ${s.name}">↺</button>`
+        : `<button class="site-remove" title="Hide ${s.name}">✕</button>`
+      }`;
 
-    card.addEventListener('click', () => loadSite(s.idx));
+    if (isHidden) {
+      card.querySelector('.site-restore').addEventListener('click', e => {
+        e.stopPropagation();
+        restoreSite(s.name);
+      });
+    } else {
+      card.querySelector('.site-remove').addEventListener('click', e => {
+        e.stopPropagation();
+        hideSite(s.name);
+      });
+      card.addEventListener('click', () => loadSite(s.idx));
+    }
+
     siteList.appendChild(card);
   });
 }
