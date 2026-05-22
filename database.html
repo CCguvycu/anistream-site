@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database — AnimeWeb</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .db-header {
+      margin-top: 62px;
+      padding: 2.5rem 2rem 0;
+      max-width: 1400px;
+      margin-inline: auto;
+      padding-top: calc(62px + 2.5rem);
+    }
+    .db-label {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--purple-lt); text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+    .db-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800;
+      letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 0.5rem;
+    }
+    .db-sub {
+      color: var(--muted); font-size: 0.88rem; margin-bottom: 1.8rem;
+    }
+    .db-sub strong { color: var(--purple-lt); }
+
+    /* Controls */
+    .db-controls {
+      display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .db-sort-label { font-size: 0.78rem; color: var(--dim); flex-shrink: 0; }
+    .db-sort-btn {
+      padding: 0.35rem 0.85rem; border-radius: 100px; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--card); color: var(--muted);
+      cursor: pointer; transition: all var(--t);
+    }
+    .db-sort-btn:hover, .db-sort-btn.active {
+      border-color: var(--purple); color: var(--text); background: rgba(168,85,247,0.1);
+    }
+    .db-sort-btn.active { color: var(--purple-lt); }
+
+    /* Genre filter */
+    .genre-filter {
+      display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none;
+      padding-bottom: 0.25rem; margin-bottom: 1.5rem;
+    }
+    .genre-filter::-webkit-scrollbar { display: none; }
+    .gf-chip {
+      flex-shrink: 0; padding: 0.35rem 0.9rem; border-radius: 100px;
+      font-size: 0.75rem; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border); background: var(--card); color: var(--muted);
+      transition: all var(--t);
+    }
+    .gf-chip:hover { border-color: var(--purple); color: var(--text); }
+    .gf-chip.active {
+      background: rgba(168,85,247,0.15); border-color: var(--purple); color: var(--purple-lt);
+    }
+
+    /* Stats bar */
+    .db-stats {
+      display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;
+    }
+    .db-stat-val { font-size: 1.3rem; font-weight: 800; color: var(--purple-lt); }
+    .db-stat-lbl { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Grid */
+    .db-wrap { padding: 0 2rem 4rem; max-width: 1400px; margin: 0 auto; }
+    .db-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 1rem;
+    }
+
+    /* Load more */
+    .load-more-wrap { text-align: center; padding: 2rem 0 1rem; }
+    .load-more-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 2rem; border-radius: 100px; font-size: 0.88rem; font-weight: 600;
+      border: 1px solid var(--purple); color: var(--purple-lt);
+      background: rgba(168,85,247,0.08); cursor: pointer; transition: all var(--t);
+    }
+    .load-more-btn:hover { background: rgba(168,85,247,0.18); }
+    .load-more-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .load-more-btn .lm-count { font-size: 0.75rem; color: var(--dim); }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      height: 3px; background: var(--card); border-radius: 2px; margin-bottom: 2rem; overflow: hidden;
+    }
+    .progress-bar { height: 100%; background: var(--purple); border-radius: 2px; transition: width 0.4s; }
+
+    /* Error */
+    .db-error {
+      text-align: center; padding: 4rem 1rem; color: var(--muted);
+    }
+    .db-error .big { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="movies.html">Movies</a></li>
+    <li><a href="database.html" class="active">Database</a></li>
+    <li><a href="watchlist.html">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+  </ul>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="navSearch" placeholder="Search anime...">
+    <div class="search-drop" id="searchDrop"></div>
+  </div>
+</nav>
+
+<div class="db-header">
+  <div class="db-label">⟐ Anime Database</div>
+  <div class="db-title">Full Anime Library</div>
+  <div class="db-sub" id="dbSub">Loading catalog…</div>
+
+  <div class="db-stats" id="dbStats"></div>
+
+  <div class="db-controls">
+    <span class="db-sort-label">Sort:</span>
+    <button class="db-sort-btn active" data-sort="score">Top Rated</button>
+    <button class="db-sort-btn" data-sort="popularity">Popular</button>
+    <button class="db-sort-btn" data-sort="newest">Newest</button>
+    <button class="db-sort-btn" data-sort="title">A – Z</button>
+  </div>
+
+  <div class="genre-filter" id="genreFilter"></div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="db-wrap">
+  <div class="db-grid" id="dbGrid"></div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+    <button class="load-more-btn" id="loadMoreBtn">
+      Load more <span class="lm-count" id="lmCount"></span>
+    </button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+initSearch();
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let ALL_IDS    = [];          // all MAL IDs from ids.json
+let LOADED     = [];          // AniList anime objects fetched so far
+let CHUNK      = 0;           // which chunk we're on
+let TOTAL      = 0;           // total IDs
+let UPDATED    = '';
+let curSort    = 'score';
+let curGenre   = null;
+const CHUNK_SZ = 50;
+
+const grid        = document.getElementById('dbGrid');
+const sub         = document.getElementById('dbSub');
+const statsEl     = document.getElementById('dbStats');
+const progressBar = document.getElementById('progressBar');
+const loadMoreWrap = document.getElementById('loadMoreWrap');
+const loadMoreBtn  = document.getElementById('loadMoreBtn');
+const lmCount      = document.getElementById('lmCount');
+const genreFilter  = document.getElementById('genreFilter');
+
+// ── Fetch ID catalog ──────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const r = await fetch('data/anime-ids.json');
+    const data = await r.json();
+    ALL_IDS = data.ids || [];
+    TOTAL   = ALL_IDS.length;
+    UPDATED = data.updated ? new Date(data.updated).toLocaleDateString() : '';
+    sub.innerHTML = `<strong>${TOTAL}</strong> anime titles · updated ${UPDATED} · auto-grows weekly`;
+    statsEl.innerHTML = `
+      <div><div class="db-stat-val">${TOTAL}</div><div class="db-stat-lbl">Titles</div></div>
+      <div><div class="db-stat-val">${Math.ceil(TOTAL / CHUNK_SZ)}</div><div class="db-stat-lbl">Pages</div></div>
+      <div><div class="db-stat-val">${UPDATED}</div><div class="db-stat-lbl">Last Updated</div></div>
+    `;
+    await loadChunk();
+  } catch (e) {
+    grid.innerHTML = `<div class="db-error" style="grid-column:1/-1">
+      <div class="big">⚠</div>
+      <p>Could not load catalog. Run the site from a local server.</p>
+      <code style="font-size:.75rem;color:var(--dim)">python -m http.server 8080</code>
+    </div>`;
+  }
+}
+
+// ── Load one chunk of IDs from AniList ────────────────────────────────────────
+async function loadChunk() {
+  const start = CHUNK * CHUNK_SZ;
+  const end   = Math.min(start + CHUNK_SZ, TOTAL);
+  if (start >= TOTAL) return;
+
+  loadMoreBtn.disabled = true;
+  loadMoreBtn.textContent = 'Loading…';
+
+  const chunkIds = ALL_IDS.slice(start, end);
+  progressBar.style.width = `${(end / TOTAL) * 100}%`;
+
+  try {
+    const data = await gql(Q.byMalIds, { ids: chunkIds, page: 1 });
+    const media = data?.Page?.media || [];
+    LOADED.push(...media);
+    CHUNK++;
+    buildGenreFilter();
+    render();
+  } catch (e) {
+    console.error(e);
+    toast('AniList error — retrying…');
+  }
+
+  const remaining = TOTAL - CHUNK * CHUNK_SZ;
+  if (remaining > 0) {
+    loadMoreWrap.style.display = 'block';
+    loadMoreBtn.disabled = false;
+    loadMoreBtn.innerHTML = `Load more <span class="lm-count">${Math.min(remaining, CHUNK_SZ)} of ${remaining} remaining</span>`;
+  } else {
+    loadMoreWrap.style.display = 'none';
+    progressBar.style.width = '100%';
+  }
+}
+
+// ── Genre filter ──────────────────────────────────────────────────────────────
+function buildGenreFilter() {
+  const counts = {};
+  LOADED.forEach(a => (a.genres || []).forEach(g => { counts[g] = (counts[g] || 0) + 1; }));
+  const top = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 16).map(([g]) => g);
+
+  genreFilter.innerHTML = `<button class="gf-chip${!curGenre?' active':''}" data-genre="">All</button>` +
+    top.map(g => `<button class="gf-chip${curGenre===g?' active':''}" data-genre="${g}">${g}</button>`).join('');
+
+  genreFilter.querySelectorAll('.gf-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      curGenre = btn.dataset.genre || null;
+      genreFilter.querySelectorAll('.gf-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+  });
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  let items = [...LOADED];
+
+  if (curGenre) items = items.filter(a => (a.genres || []).includes(curGenre));
+
+  items.sort((a, b) => {
+    if (curSort === 'score')      return (b.averageScore || 0) - (a.averageScore || 0);
+    if (curSort === 'popularity') return (a.popularity || 9999) - (b.popularity || 9999);
+    if (curSort === 'newest')     return (b.seasonYear || 0) - (a.seasonYear || 0);
+    if (curSort === 'title') {
+      const ta = a.title?.english || a.title?.romaji || '';
+      const tb = b.title?.english || b.title?.romaji || '';
+      return ta.localeCompare(tb);
+    }
+    return 0;
+  });
+
+  grid.innerHTML = '';
+  items.forEach(a => grid.appendChild(card(a)));
+}
+
+// ── Sort buttons ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.db-sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    curSort = btn.dataset.sort;
+    document.querySelectorAll('.db-sort-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+});
+
+loadMoreBtn.addEventListener('click', loadChunk);
+
+init();
+</script>
+</body>
+</html>

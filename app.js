@@ -70,6 +70,13 @@ const Q = {
     }
   }`,
 
+  byMalIds: `query($ids:[Int],$page:Int){
+    Page(page:$page,perPage:50){
+      pageInfo{ hasNextPage currentPage total }
+      media(type:ANIME,idMal_in:$ids,sort:SCORE_DESC){ ${MF} }
+    }
+  }`,
+
   detail: `query($id:Int){
     Media(id:$id,type:ANIME){
       ${MF}
