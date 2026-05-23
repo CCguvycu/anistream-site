@@ -1,35 +1,33 @@
-name: Weekly Anime ID Scrape
+name: Daily Catalog Sync
 
 on:
   schedule:
-    - cron: '0 4 * * 1'   # Every Monday 04:00 UTC
-  workflow_dispatch:        # Manual trigger from GitHub UI
+    - cron: '0 5 * * *'   # Every day at 05:00 UTC (1hr after AnimeDb finishes at 04:00)
+  workflow_dispatch:        # Manual trigger from GitHub UI or API
 
 jobs:
-  scrape:
+  sync:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
         run: pip install requests
 
-      - name: Run scraper
-        run: python scripts/scrape_ids.py
+      - name: Sync catalog from AnimeDb
+        run: python scripts/sync_from_animedb.py
 
-      - name: Commit new IDs
+      - name: Commit updated catalog
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'chore: weekly anime ID update [skip ci]'
+          commit_message: 'chore: daily sync from AnimeDb [skip ci]'
           file_pattern: data/anime-ids.json
-          commit_user_name: 'anime-bot'
-          commit_user_email: 'anime-bot@users.noreply.github.com'
+          commit_user_name: 'animedb-bot'
+          commit_user_email: 'animedb-bot@users.noreply.github.com'
