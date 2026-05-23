@@ -1,362 +1,716 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime — AnimeWeb</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    /* ── Trailer ── */
-    .trailer-wrap {
-      position: relative; width: 100%; padding-top: 56.25%;
-      border-radius: var(--r-lg); overflow: hidden;
-      background: #000; margin-bottom: 1.75rem;
-      border: 1px solid var(--border);
-    }
-    .trailer-wrap iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: none;
-    }
-
-    /* ── Characters ── */
-    .char-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 0.75rem; margin-top: 0.75rem;
-    }
-    .char-card {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 0.4rem; cursor: default;
-    }
-    .char-card img {
-      width: 70px; height: 70px; border-radius: 50%;
-      object-fit: cover; border: 2px solid var(--border);
-      background: var(--card);
-    }
-    .char-name {
-      font-size: 0.7rem; font-weight: 600; text-align: center;
-      line-height: 1.3; color: var(--muted);
-    }
-
-    /* ── Relations ── */
-    .rel-row {
-      display: flex; gap: 0.75rem; overflow-x: auto;
-      padding-bottom: 0.5rem; scrollbar-width: none;
-    }
-    .rel-row::-webkit-scrollbar { display: none; }
-    .rel-card {
-      flex: 0 0 110px; cursor: pointer; transition: transform var(--t);
-    }
-    .rel-card:hover { transform: translateY(-3px); }
-    .rel-card img {
-      width: 110px; height: 155px; object-fit: cover;
-      border-radius: var(--r); background: var(--card);
-      border: 1px solid var(--border);
-    }
-    .rel-title { font-size: 0.72rem; font-weight: 600; margin-top: 0.35rem; line-height: 1.3; }
-    .rel-type  { font-size: 0.65rem; color: var(--purple-lt); margin-top: 1px; }
-
-    .section-h { font-size: 1rem; font-weight: 700; margin: 1.75rem 0 0.85rem; }
-
-    /* ── Nyaa torrents ── */
-    .nyaa-list { display:flex; flex-direction:column; gap:.5rem; margin-top:.75rem; }
-    .nyaa-item {
-      background:var(--card); border:1px solid var(--border); border-radius:8px;
-      padding:.6rem .85rem; display:flex; align-items:center; gap:.75rem;
-      transition:border-color var(--t);
-    }
-    .nyaa-item:hover { border-color:var(--purple); }
-    .nyaa-title { flex:1; font-size:.78rem; font-weight:500; line-height:1.4; min-width:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
-    .nyaa-seeds { font-size:.72rem; color:#4ade80; font-weight:700; flex-shrink:0; }
-    .nyaa-size  { font-size:.7rem; color:var(--dim); flex-shrink:0; }
-    .nyaa-mag   { font-size:.75rem; padding:.28rem .7rem; border-radius:6px; background:rgba(168,85,247,.15); color:var(--purple-lt); text-decoration:none; flex-shrink:0; font-weight:600; transition:background var(--t); }
-    .nyaa-mag:hover { background:rgba(168,85,247,.28); }
-    .nyaa-state { color:var(--dim); font-size:.82rem; padding:.5rem 0; }
-
-    /* ── Track bell ── */
-    .btn-track {
-      display:inline-flex; align-items:center; gap:.4rem;
-      padding:.45rem 1rem; border-radius:8px; font-size:.82rem; font-weight:600;
-      border:1px solid var(--border); background:var(--card); color:var(--muted);
-      cursor:pointer; transition:all var(--t);
-    }
-    .btn-track:hover, .btn-track.on { border-color:var(--purple); color:var(--purple-lt); background:rgba(168,85,247,.1); }
-  </style>
-</head>
-<body>
-
-<nav class="navbar">
-  <a href="database.html" class="nav-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
-  <ul class="nav-links">
-    <li><a href="database.html">Home</a></li>
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Anime — AnimeWeb</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+
+    /* ── Trailer ── */
+
+    .trailer-wrap {
+
+      position: relative; width: 100%; padding-top: 56.25%;
+
+      border-radius: var(--r-lg); overflow: hidden;
+
+      background: #000; margin-bottom: 1.75rem;
+
+      border: 1px solid var(--border);
+
+    }
+
+    .trailer-wrap iframe {
+
+      position: absolute; inset: 0; width: 100%; height: 100%; border: none;
+
+    }
+
+
+
+    /* ── Characters ── */
+
+    .char-grid {
+
+      display: grid;
+
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+
+      gap: 0.75rem; margin-top: 0.75rem;
+
+    }
+
+    .char-card {
+
+      display: flex; flex-direction: column; align-items: center;
+
+      gap: 0.4rem; cursor: default;
+
+    }
+
+    .char-card img {
+
+      width: 70px; height: 70px; border-radius: 50%;
+
+      object-fit: cover; border: 2px solid var(--border);
+
+      background: var(--card);
+
+    }
+
+    .char-name {
+
+      font-size: 0.7rem; font-weight: 600; text-align: center;
+
+      line-height: 1.3; color: var(--muted);
+
+    }
+
+
+
+    /* ── Relations ── */
+
+    .rel-row {
+
+      display: flex; gap: 0.75rem; overflow-x: auto;
+
+      padding-bottom: 0.5rem; scrollbar-width: none;
+
+    }
+
+    .rel-row::-webkit-scrollbar { display: none; }
+
+    .rel-card {
+
+      flex: 0 0 110px; cursor: pointer; transition: transform var(--t);
+
+    }
+
+    .rel-card:hover { transform: translateY(-3px); }
+
+    .rel-card img {
+
+      width: 110px; height: 155px; object-fit: cover;
+
+      border-radius: var(--r); background: var(--card);
+
+      border: 1px solid var(--border);
+
+    }
+
+    .rel-title { font-size: 0.72rem; font-weight: 600; margin-top: 0.35rem; line-height: 1.3; }
+
+    .rel-type  { font-size: 0.65rem; color: var(--purple-lt); margin-top: 1px; }
+
+
+
+    .section-h { font-size: 1rem; font-weight: 700; margin: 1.75rem 0 0.85rem; }
+
+
+
+    /* ── Nyaa torrents ── */
+
+    .nyaa-list { display:flex; flex-direction:column; gap:.5rem; margin-top:.75rem; }
+
+    .nyaa-item {
+
+      background:var(--card); border:1px solid var(--border); border-radius:8px;
+
+      padding:.6rem .85rem; display:flex; align-items:center; gap:.75rem;
+
+      transition:border-color var(--t);
+
+    }
+
+    .nyaa-item:hover { border-color:var(--purple); }
+
+    .nyaa-title { flex:1; font-size:.78rem; font-weight:500; line-height:1.4; min-width:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
+
+    .nyaa-seeds { font-size:.72rem; color:#4ade80; font-weight:700; flex-shrink:0; }
+
+    .nyaa-size  { font-size:.7rem; color:var(--dim); flex-shrink:0; }
+
+    .nyaa-mag   { font-size:.75rem; padding:.28rem .7rem; border-radius:6px; background:rgba(168,85,247,.15); color:var(--purple-lt); text-decoration:none; flex-shrink:0; font-weight:600; transition:background var(--t); }
+
+    .nyaa-mag:hover { background:rgba(168,85,247,.28); }
+
+    .nyaa-state { color:var(--dim); font-size:.82rem; padding:.5rem 0; }
+
+
+
+    /* ── Track bell ── */
+
+    .btn-track {
+
+      display:inline-flex; align-items:center; gap:.4rem;
+
+      padding:.45rem 1rem; border-radius:8px; font-size:.82rem; font-weight:600;
+
+      border:1px solid var(--border); background:var(--card); color:var(--muted);
+
+      cursor:pointer; transition:all var(--t);
+
+    }
+
+    .btn-track:hover, .btn-track.on { border-color:var(--purple); color:var(--purple-lt); background:rgba(168,85,247,.1); }
+
+  </style>
+
+</head>
+
+<body>
+
+
+
+<nav class="navbar">
+
+  <a href="database.html" class="nav-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
+
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="database.html">Database</a></li>
     <li><a href="movies.html">Movies</a></li>
-    <li><a href="database.html">Database</a></li>
-    <li><a href="watchlist.html">My List</a></li>
-    <li><a href="browse.html">Browse Free</a></li>
-    <li><a href="about.html">About</a></li>
-  </ul>
-  <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime...">
-    <div class="search-drop" id="searchDrop"></div>
-  </div>
-</nav>
-
-<div class="page">
-
-  <div class="banner" id="banner">
-    <div id="bannerImg" class="skel" style="width:100%;height:100%"></div>
-    <div class="banner-shade"></div>
-  </div>
-
-  <div class="detail-wrap">
-
-    <div class="detail-head" id="detailHead">
-      <div class="skel detail-poster"></div>
-      <div style="flex:1">
-        <div class="skel" style="width:55%;height:34px;margin-bottom:0.5rem"></div>
-        <div class="skel" style="width:38%;height:18px;margin-bottom:0.9rem"></div>
-        <div class="skel" style="width:75%;height:40px"></div>
-      </div>
-    </div>
-
-    <div class="detail-body" id="detailBody">
-      <div id="mainCol"></div>
-      <div id="sideCol"></div>
-    </div>
-
-    <div id="recsWrap"></div>
-
-  </div>
-</div>
-
-<script src="app.js"></script>
-<script>
-  const animeId = parseInt(P.get('id'));
-  if (!animeId) location.href = 'index.html';
-
-  async function load() {
-    const data = await gql(Q.detail, { id: animeId });
-    const a = data.Media;
-
-    document.title = `${a.title.english || a.title.romaji} — AnimeWeb`;
-
-    // ── Banner ──
-    const bannerSrc = a.bannerImage || a.coverImage?.extraLarge;
-    if (bannerSrc) {
-      const img = document.createElement('img');
-      img.src = bannerSrc; img.alt = '';
-      img.style.cssText = a.bannerImage ? '' : 'filter:blur(6px);transform:scale(1.06);width:100%;height:100%;object-fit:cover';
-      $('#bannerImg').replaceWith(img);
-      img.id = 'bannerImg';
-    }
-
-    // ── Header ──
-    const title   = a.title.english || a.title.romaji;
-    const alt     = a.title.english ? a.title.romaji : a.title.native;
-    const genres  = (a.genres || []).slice(0, 6).map(g =>
-      `<span class="gchip" onclick="P.go('search.html',{genre:'${g}'})">${g}</span>`
-    ).join('');
-    const studios = a.studios?.nodes?.map(s => s.name).join(', ') || '—';
-    const prog    = S.progress(animeId);
-    const watchEp = prog.last || 1;
-    const watchLabel = prog.last ? `▶ Continue — Ep ${prog.last}` : '▶ Watch';
-
-    $('#detailHead').innerHTML = `
-      <img class="detail-poster" src="${a.coverImage?.extraLarge || a.coverImage?.large || ''}" alt="${title}" loading="lazy">
-      <div class="detail-info">
-        <h1 class="detail-title">${title}</h1>
-        ${alt ? `<div class="detail-alt">${alt}</div>` : ''}
-        <div class="stats">
-          ${a.averageScore ? `<div><div class="stat-val gold">★ ${fmt.score(a.averageScore)}</div><div class="stat-key">Score</div></div>` : ''}
-          ${a.episodes    ? `<div><div class="stat-val">${a.episodes}</div><div class="stat-key">Episodes</div></div>` : ''}
-          <div><div class="stat-val">${fmt.status(a.status)}</div><div class="stat-key">Status</div></div>
-          ${a.season ? `<div><div class="stat-val">${fmt.season(a.season, a.seasonYear)}</div><div class="stat-key">Season</div></div>` : ''}
-        </div>
-        <div class="gchips">${genres}</div>
-        <div style="display:flex;gap:0.65rem;flex-wrap:wrap;margin-top:0.75rem">
-          <button class="btn btn-primary" onclick="P.go('watch.html',{id:${a.id},ep:${watchEp}})">${watchLabel}</button>
-          <button class="btn btn-ghost" id="wlBtn">${S.inWatchlist(animeId) ? '♥ Saved' : '♡ My List'}</button>
-          <button class="btn-track${S.inTracking(animeId) ? ' on' : ''}" id="trackBtn">🔔 ${S.inTracking(animeId) ? 'Tracking' : 'Notify me'}</button>
-        </div>
-      </div>`;
-
-    $('#wlBtn').addEventListener('click', () => {
-      S.toggleWatchlist(a);
-      const saved = S.inWatchlist(animeId);
-      $('#wlBtn').textContent = saved ? '♥ Saved' : '♡ My List';
-      toast(saved ? 'Added to My List' : 'Removed from My List');
-    });
-
-    // ── Track bell ──
-    $('#trackBtn').addEventListener('click', async () => {
-      const granted = await requestNotifPermission();
-      if (!granted) { toast('Allow notifications in browser settings first'); return; }
-      S.toggleTrack(a);
-      const on = S.inTracking(animeId);
-      $('#trackBtn').textContent = `🔔 ${on ? 'Tracking' : 'Notify me'}`;
-      $('#trackBtn').classList.toggle('on', on);
-      toast(on ? '🔔 Episode alerts on' : 'Notifications off');
-    });
-
-    // ── Synopsis ──
-    const desc  = fmt.plain(a.description || 'No description available.');
-    const short = desc.length > 420 ? desc.slice(0, 420) + '…' : desc;
-
-    let mainHTML = `
-      <div>
-        <h3 class="section-h" style="margin-top:0">Synopsis</h3>
-        <p class="synopsis" id="synText">${short}</p>
-        ${desc.length > 420 ? `<span class="read-more" id="readMore">Read more ▼</span>` : ''}
-      </div>`;
-
-    // ── Trailer ──
-    if (a.trailer?.id && a.trailer.site === 'youtube') {
-      mainHTML += `
-        <h3 class="section-h">Trailer</h3>
-        <div class="trailer-wrap">
-          <iframe src="https://www.youtube.com/embed/${a.trailer.id}"
-            allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
-        </div>`;
-    }
-
-    // ── Episodes ──
-    const totalEps = a.episodes || (a.nextAiringEpisode ? a.nextAiringEpisode.episode - 1 : 0);
-    mainHTML += `<div id="epsSection" style="margin-top:1.75rem"></div>`;
-    mainHTML += `<div id="nyaaSection"></div>`;
-
-    // ── Characters ──
-    const chars = a.characters?.nodes?.filter(c => c.image?.large) || [];
-    if (chars.length) {
-      mainHTML += `
-        <h3 class="section-h">Characters</h3>
-        <div class="char-grid">${chars.map(c => `
-          <div class="char-card">
-            <img src="${c.image.large}" alt="" loading="lazy" onerror="this.src=''">
-            <div class="char-name">${c.name.full}</div>
-          </div>`).join('')}
-        </div>`;
-    }
-
-    // ── Related ──
-    const related = a.relations?.edges
-      ?.filter(e => e.node.type === 'ANIME' && ['SEQUEL','PREQUEL','SIDE_STORY','PARENT','ALTERNATIVE'].includes(e.relationType))
-      .slice(0, 10) || [];
-    if (related.length) {
-      mainHTML += `
-        <h3 class="section-h">Related</h3>
-        <div class="rel-row">${related.map(e => `
-          <div class="rel-card" onclick="P.go('anime.html',{id:'${e.node.id}'})">
-            <img src="${e.node.coverImage?.large || ''}" alt="" loading="lazy" onerror="this.src=''">
-            <div class="rel-title">${e.node.title.romaji}</div>
-            <div class="rel-type">${e.relationType.replace(/_/g,' ')}</div>
-          </div>`).join('')}
-        </div>`;
-    }
-
-    $('#mainCol').innerHTML = mainHTML;
-
-    if (desc.length > 420) {
-      $('#readMore').addEventListener('click', () => {
-        $('#synText').textContent = desc;
-        $('#readMore').remove();
-      });
-    }
-
-    // Episodes grid
-    if (totalEps > 0) {
-      const p2 = S.progress(animeId);
-      const watched = p2.eps || [], last = p2.last;
-      $('#epsSection').innerHTML = `
-        <div class="eps-head"><div class="eps-title">Episodes <span style="color:var(--dim);font-weight:400">(${totalEps})</span></div></div>
-        <div class="ep-grid" id="epGrid"></div>`;
-      const grid = $('#epGrid');
-      for (let i = 1; i <= totalEps; i++) {
-        const btn = mk('a', `epb${watched.includes(i) ? ' done' : ''}${last === i ? ' cur' : ''}`, String(i));
-        btn.href = `watch.html?id=${animeId}&ep=${i}`;
-        grid.appendChild(btn);
-      }
-    } else {
-      $('#epsSection').innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">📺</div>
-          <div class="empty-title">No episodes yet</div>
-        </div>`;
-    }
-
-    // ── Nyaa torrents ──
-    (async () => {
-      const nyaaEl = $('#nyaaSection');
-      if (!nyaaEl) return;
-      nyaaEl.innerHTML = `<h3 class="section-h">Torrents <span style="font-size:.7rem;color:var(--dim);font-weight:400">via Nyaa.si</span></h3><div class="nyaa-state">Searching…</div>`;
-      try {
-        const results = await fetchNyaa(title);
-        if (!results.length) {
-          nyaaEl.querySelector('.nyaa-state').textContent = 'No results found on Nyaa.si';
-          return;
-        }
-        const list = results.map(t => {
-          const mag = t.magnet ? `<a class="nyaa-mag" href="${t.magnet}">⇩ Magnet</a>` :
-                      t.link   ? `<a class="nyaa-mag" href="${t.link}" target="_blank">↗ Link</a>` : '';
-          return `<div class="nyaa-item">
-            <div class="nyaa-title" title="${t.title}">${t.title}</div>
-            <span class="nyaa-seeds">▲ ${t.seeders}</span>
-            <span class="nyaa-size">${t.size}</span>
-            ${mag}
-          </div>`;
-        }).join('');
-        nyaaEl.innerHTML = `<h3 class="section-h">Torrents <span style="font-size:.7rem;color:var(--dim);font-weight:400">via Nyaa.si · ${results.length} results</span></h3><div class="nyaa-list">${list}</div>`;
-      } catch {
-        nyaaEl.querySelector('.nyaa-state').textContent = 'Nyaa search failed — try again later.';
-      }
-    })();
-
-    // ── Sidebar ──
-    $('#sideCol').innerHTML = `
-      <div class="info-box">
-        <div class="info-box-title">Information</div>
-        <div class="info-row"><span class="info-k">Format</span><span class="info-v">${a.format || '—'}</span></div>
-        <div class="info-row"><span class="info-k">Status</span><span class="info-v">${fmt.status(a.status)}</span></div>
-        <div class="info-row"><span class="info-k">Season</span><span class="info-v">${fmt.season(a.season, a.seasonYear)}</span></div>
-        <div class="info-row"><span class="info-k">Episodes</span><span class="info-v">${a.episodes || '?'}</span></div>
-        <div class="info-row"><span class="info-k">Studio</span><span class="info-v">${studios}</span></div>
-        <div class="info-row"><span class="info-k">Score</span><span class="info-v" style="color:var(--gold)">${a.averageScore ? fmt.score(a.averageScore) + ' / 10' : '—'}</span></div>
-      </div>
-      ${(a.genres||[]).length ? `
-      <div class="info-box">
-        <div class="info-box-title">Genres</div>
-        <div class="gchips">${(a.genres||[]).map(g=>`<span class="gchip" onclick="P.go('search.html',{genre:'${g}'})">${g}</span>`).join('')}</div>
-      </div>` : ''}`;
-
-    // ── Recommendations ──
-    const recs = a.recommendations?.nodes
-      ?.filter(n => n.mediaRecommendation)
-      .map(n => n.mediaRecommendation).slice(0, 8);
-    if (recs?.length) {
-      $('#recsWrap').innerHTML = `
-        <div class="section" style="padding-left:0;padding-right:0">
-          <div class="section-head"><h2 class="section-title">You May Also Like</h2></div>
-          <div class="scroll" id="recScroll"></div>
-        </div>`;
-      recs.forEach(r => {
-        const c = card(r);
-        c.style.cssText = 'flex:0 0 155px;height:220px';
-        $('#recScroll').appendChild(c);
-      });
-    }
-  }
-
-  registerSW();
-  load().catch(err => {
-    console.error(err);
-    $('#detailHead').innerHTML = `
-      <div class="empty" style="grid-column:1/-1">
-        <div class="empty-icon">⚠️</div>
-        <div class="empty-title">Failed to load</div>
-        <div class="empty-body">${err.message}</div>
-      </div>`;
-  });
-</script>
-</body>
-</html>
+    <li><a href="watchlist.html">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+  </ul>
+
+  <div class="nav-search">
+
+    <span class="search-icon">🔍</span>
+
+    <input type="text" id="navSearch" placeholder="Search anime...">
+
+    <div class="search-drop" id="searchDrop"></div>
+
+  </div>
+
+</nav>
+
+
+
+<div class="page">
+
+
+
+  <div class="banner" id="banner">
+
+    <div id="bannerImg" class="skel" style="width:100%;height:100%"></div>
+
+    <div class="banner-shade"></div>
+
+  </div>
+
+
+
+  <div class="detail-wrap">
+
+
+
+    <div class="detail-head" id="detailHead">
+
+      <div class="skel detail-poster"></div>
+
+      <div style="flex:1">
+
+        <div class="skel" style="width:55%;height:34px;margin-bottom:0.5rem"></div>
+
+        <div class="skel" style="width:38%;height:18px;margin-bottom:0.9rem"></div>
+
+        <div class="skel" style="width:75%;height:40px"></div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="detail-body" id="detailBody">
+
+      <div id="mainCol"></div>
+
+      <div id="sideCol"></div>
+
+    </div>
+
+
+
+    <div id="recsWrap"></div>
+
+
+
+  </div>
+
+</div>
+
+
+
+<script src="app.js"></script>
+
+<script>
+
+  const animeId = parseInt(P.get('id'));
+
+  if (!animeId) location.href = 'index.html';
+
+
+
+  async function load() {
+
+    const data = await gql(Q.detail, { id: animeId });
+
+    const a = data.Media;
+
+
+
+    document.title = `${a.title.english || a.title.romaji} — AnimeWeb`;
+
+
+
+    // ── Banner ──
+
+    const bannerSrc = a.bannerImage || a.coverImage?.extraLarge;
+
+    if (bannerSrc) {
+
+      const img = document.createElement('img');
+
+      img.src = bannerSrc; img.alt = '';
+
+      img.style.cssText = a.bannerImage ? '' : 'filter:blur(6px);transform:scale(1.06);width:100%;height:100%;object-fit:cover';
+
+      $('#bannerImg').replaceWith(img);
+
+      img.id = 'bannerImg';
+
+    }
+
+
+
+    // ── Header ──
+
+    const title   = a.title.english || a.title.romaji;
+
+    const alt     = a.title.english ? a.title.romaji : a.title.native;
+
+    const genres  = (a.genres || []).slice(0, 6).map(g =>
+
+      `<span class="gchip" onclick="P.go('search.html',{genre:'${g}'})">${g}</span>`
+
+    ).join('');
+
+    const studios = a.studios?.nodes?.map(s => s.name).join(', ') || '—';
+
+    const prog    = S.progress(animeId);
+
+    const watchEp = prog.last || 1;
+
+    const watchLabel = prog.last ? `▶ Continue — Ep ${prog.last}` : '▶ Watch';
+
+
+
+    $('#detailHead').innerHTML = `
+
+      <img class="detail-poster" src="${a.coverImage?.extraLarge || a.coverImage?.large || ''}" alt="${title}" loading="lazy">
+
+      <div class="detail-info">
+
+        <h1 class="detail-title">${title}</h1>
+
+        ${alt ? `<div class="detail-alt">${alt}</div>` : ''}
+
+        <div class="stats">
+
+          ${a.averageScore ? `<div><div class="stat-val gold">★ ${fmt.score(a.averageScore)}</div><div class="stat-key">Score</div></div>` : ''}
+
+          ${a.episodes    ? `<div><div class="stat-val">${a.episodes}</div><div class="stat-key">Episodes</div></div>` : ''}
+
+          <div><div class="stat-val">${fmt.status(a.status)}</div><div class="stat-key">Status</div></div>
+
+          ${a.season ? `<div><div class="stat-val">${fmt.season(a.season, a.seasonYear)}</div><div class="stat-key">Season</div></div>` : ''}
+
+        </div>
+
+        <div class="gchips">${genres}</div>
+
+        <div style="display:flex;gap:0.65rem;flex-wrap:wrap;margin-top:0.75rem">
+
+          <button class="btn btn-primary" onclick="P.go('watch.html',{id:${a.id},ep:${watchEp}})">${watchLabel}</button>
+
+          <button class="btn btn-ghost" id="wlBtn">${S.inWatchlist(animeId) ? '♥ Saved' : '♡ My List'}</button>
+
+          <button class="btn-track${S.inTracking(animeId) ? ' on' : ''}" id="trackBtn">🔔 ${S.inTracking(animeId) ? 'Tracking' : 'Notify me'}</button>
+
+        </div>
+
+      </div>`;
+
+
+
+    $('#wlBtn').addEventListener('click', () => {
+
+      S.toggleWatchlist(a);
+
+      const saved = S.inWatchlist(animeId);
+
+      $('#wlBtn').textContent = saved ? '♥ Saved' : '♡ My List';
+
+      toast(saved ? 'Added to My List' : 'Removed from My List');
+
+    });
+
+
+
+    // ── Track bell ──
+
+    $('#trackBtn').addEventListener('click', async () => {
+
+      const granted = await requestNotifPermission();
+
+      if (!granted) { toast('Allow notifications in browser settings first'); return; }
+
+      S.toggleTrack(a);
+
+      const on = S.inTracking(animeId);
+
+      $('#trackBtn').textContent = `🔔 ${on ? 'Tracking' : 'Notify me'}`;
+
+      $('#trackBtn').classList.toggle('on', on);
+
+      toast(on ? '🔔 Episode alerts on' : 'Notifications off');
+
+    });
+
+
+
+    // ── Synopsis ──
+
+    const desc  = fmt.plain(a.description || 'No description available.');
+
+    const short = desc.length > 420 ? desc.slice(0, 420) + '…' : desc;
+
+
+
+    let mainHTML = `
+
+      <div>
+
+        <h3 class="section-h" style="margin-top:0">Synopsis</h3>
+
+        <p class="synopsis" id="synText">${short}</p>
+
+        ${desc.length > 420 ? `<span class="read-more" id="readMore">Read more ▼</span>` : ''}
+
+      </div>`;
+
+
+
+    // ── Trailer ──
+
+    if (a.trailer?.id && a.trailer.site === 'youtube') {
+
+      mainHTML += `
+
+        <h3 class="section-h">Trailer</h3>
+
+        <div class="trailer-wrap">
+
+          <iframe src="https://www.youtube.com/embed/${a.trailer.id}"
+
+            allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+
+        </div>`;
+
+    }
+
+
+
+    // ── Episodes ──
+
+    const totalEps = a.episodes || (a.nextAiringEpisode ? a.nextAiringEpisode.episode - 1 : 0);
+
+    mainHTML += `<div id="epsSection" style="margin-top:1.75rem"></div>`;
+
+    mainHTML += `<div id="nyaaSection"></div>`;
+
+
+
+    // ── Characters ──
+
+    const chars = a.characters?.nodes?.filter(c => c.image?.large) || [];
+
+    if (chars.length) {
+
+      mainHTML += `
+
+        <h3 class="section-h">Characters</h3>
+
+        <div class="char-grid">${chars.map(c => `
+
+          <div class="char-card">
+
+            <img src="${c.image.large}" alt="" loading="lazy" onerror="this.src=''">
+
+            <div class="char-name">${c.name.full}</div>
+
+          </div>`).join('')}
+
+        </div>`;
+
+    }
+
+
+
+    // ── Related ──
+
+    const related = a.relations?.edges
+
+      ?.filter(e => e.node.type === 'ANIME' && ['SEQUEL','PREQUEL','SIDE_STORY','PARENT','ALTERNATIVE'].includes(e.relationType))
+
+      .slice(0, 10) || [];
+
+    if (related.length) {
+
+      mainHTML += `
+
+        <h3 class="section-h">Related</h3>
+
+        <div class="rel-row">${related.map(e => `
+
+          <div class="rel-card" onclick="P.go('anime.html',{id:'${e.node.id}'})">
+
+            <img src="${e.node.coverImage?.large || ''}" alt="" loading="lazy" onerror="this.src=''">
+
+            <div class="rel-title">${e.node.title.romaji}</div>
+
+            <div class="rel-type">${e.relationType.replace(/_/g,' ')}</div>
+
+          </div>`).join('')}
+
+        </div>`;
+
+    }
+
+
+
+    $('#mainCol').innerHTML = mainHTML;
+
+
+
+    if (desc.length > 420) {
+
+      $('#readMore').addEventListener('click', () => {
+
+        $('#synText').textContent = desc;
+
+        $('#readMore').remove();
+
+      });
+
+    }
+
+
+
+    // Episodes grid
+
+    if (totalEps > 0) {
+
+      const p2 = S.progress(animeId);
+
+      const watched = p2.eps || [], last = p2.last;
+
+      $('#epsSection').innerHTML = `
+
+        <div class="eps-head"><div class="eps-title">Episodes <span style="color:var(--dim);font-weight:400">(${totalEps})</span></div></div>
+
+        <div class="ep-grid" id="epGrid"></div>`;
+
+      const grid = $('#epGrid');
+
+      for (let i = 1; i <= totalEps; i++) {
+
+        const btn = mk('a', `epb${watched.includes(i) ? ' done' : ''}${last === i ? ' cur' : ''}`, String(i));
+
+        btn.href = `watch.html?id=${animeId}&ep=${i}`;
+
+        grid.appendChild(btn);
+
+      }
+
+    } else {
+
+      $('#epsSection').innerHTML = `
+
+        <div class="empty">
+
+          <div class="empty-icon">📺</div>
+
+          <div class="empty-title">No episodes yet</div>
+
+        </div>`;
+
+    }
+
+
+
+    // ── Nyaa torrents ──
+
+    (async () => {
+
+      const nyaaEl = $('#nyaaSection');
+
+      if (!nyaaEl) return;
+
+      nyaaEl.innerHTML = `<h3 class="section-h">Torrents <span style="font-size:.7rem;color:var(--dim);font-weight:400">via Nyaa.si</span></h3><div class="nyaa-state">Searching…</div>`;
+
+      try {
+
+        const results = await fetchNyaa(title);
+
+        if (!results.length) {
+
+          nyaaEl.querySelector('.nyaa-state').textContent = 'No results found on Nyaa.si';
+
+          return;
+
+        }
+
+        const list = results.map(t => {
+
+          const mag = t.magnet ? `<a class="nyaa-mag" href="${t.magnet}">⇩ Magnet</a>` :
+
+                      t.link   ? `<a class="nyaa-mag" href="${t.link}" target="_blank">↗ Link</a>` : '';
+
+          return `<div class="nyaa-item">
+
+            <div class="nyaa-title" title="${t.title}">${t.title}</div>
+
+            <span class="nyaa-seeds">▲ ${t.seeders}</span>
+
+            <span class="nyaa-size">${t.size}</span>
+
+            ${mag}
+
+          </div>`;
+
+        }).join('');
+
+        nyaaEl.innerHTML = `<h3 class="section-h">Torrents <span style="font-size:.7rem;color:var(--dim);font-weight:400">via Nyaa.si · ${results.length} results</span></h3><div class="nyaa-list">${list}</div>`;
+
+      } catch {
+
+        nyaaEl.querySelector('.nyaa-state').textContent = 'Nyaa search failed — try again later.';
+
+      }
+
+    })();
+
+
+
+    // ── Sidebar ──
+
+    $('#sideCol').innerHTML = `
+
+      <div class="info-box">
+
+        <div class="info-box-title">Information</div>
+
+        <div class="info-row"><span class="info-k">Format</span><span class="info-v">${a.format || '—'}</span></div>
+
+        <div class="info-row"><span class="info-k">Status</span><span class="info-v">${fmt.status(a.status)}</span></div>
+
+        <div class="info-row"><span class="info-k">Season</span><span class="info-v">${fmt.season(a.season, a.seasonYear)}</span></div>
+
+        <div class="info-row"><span class="info-k">Episodes</span><span class="info-v">${a.episodes || '?'}</span></div>
+
+        <div class="info-row"><span class="info-k">Studio</span><span class="info-v">${studios}</span></div>
+
+        <div class="info-row"><span class="info-k">Score</span><span class="info-v" style="color:var(--gold)">${a.averageScore ? fmt.score(a.averageScore) + ' / 10' : '—'}</span></div>
+
+      </div>
+
+      ${(a.genres||[]).length ? `
+
+      <div class="info-box">
+
+        <div class="info-box-title">Genres</div>
+
+        <div class="gchips">${(a.genres||[]).map(g=>`<span class="gchip" onclick="P.go('search.html',{genre:'${g}'})">${g}</span>`).join('')}</div>
+
+      </div>` : ''}`;
+
+
+
+    // ── Recommendations ──
+
+    const recs = a.recommendations?.nodes
+
+      ?.filter(n => n.mediaRecommendation)
+
+      .map(n => n.mediaRecommendation).slice(0, 8);
+
+    if (recs?.length) {
+
+      $('#recsWrap').innerHTML = `
+
+        <div class="section" style="padding-left:0;padding-right:0">
+
+          <div class="section-head"><h2 class="section-title">You May Also Like</h2></div>
+
+          <div class="scroll" id="recScroll"></div>
+
+        </div>`;
+
+      recs.forEach(r => {
+
+        const c = card(r);
+
+        c.style.cssText = 'flex:0 0 155px;height:220px';
+
+        $('#recScroll').appendChild(c);
+
+      });
+
+    }
+
+  }
+
+
+
+  registerSW();
+
+  load().catch(err => {
+
+    console.error(err);
+
+    $('#detailHead').innerHTML = `
+
+      <div class="empty" style="grid-column:1/-1">
+
+        <div class="empty-icon">⚠️</div>
+
+        <div class="empty-title">Failed to load</div>
+
+        <div class="empty-body">${err.message}</div>
+
+      </div>`;
+
+  });
+
+</script>
+
+</body>
+
+</html>
+

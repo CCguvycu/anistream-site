@@ -1,147 +1,286 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search — AnimeWeb</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
-
-<nav class="navbar">
-  <a href="database.html" class="nav-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
-  <ul class="nav-links">
-    <li><a href="database.html">Home</a></li>
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Search — AnimeWeb</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+
+
+<nav class="navbar">
+
+  <a href="database.html" class="nav-logo"><img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb</a>
+
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="database.html">Database</a></li>
     <li><a href="movies.html">Movies</a></li>
-    <li><a href="database.html">Database</a></li>
-    <li><a href="watchlist.html">My List</a></li>
-    <li><a href="browse.html">Browse Free</a></li>
-    <li><a href="about.html">About</a></li>
-  </ul>
-  <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime...">
-    <div class="search-drop" id="searchDrop"></div>
-  </div>
-</nav>
-
-<div class="page">
-  <div class="search-wrap">
-
-    <div style="margin-bottom:1.75rem">
-      <h1 class="search-page-title" id="pageTitle">Loading…</h1>
-      <div class="search-count" id="pageCount"></div>
-    </div>
-
-    <div class="grid" id="resultGrid"></div>
-
-    <div id="moreWrap" style="text-align:center;margin-top:2.5rem;display:none">
-      <button class="btn btn-ghost" id="moreBtn">Load More</button>
-    </div>
-
-  </div>
-</div>
-
-<script src="app.js"></script>
-<script>
-  const qParam    = P.get('q');
-  const genreParam = P.get('genre');
-  const sortParam  = P.get('sort');
-
-  let page    = 1;
-  let loading = false;
-
-  const grid    = $('#resultGrid');
-  const moreWrap = $('#moreWrap');
-  const moreBtn  = $('#moreBtn');
-
-  skels(grid, 20);
-
-  const SORT_LABELS = {
-    TRENDING_DESC:   'Trending',
-    POPULARITY_DESC: 'Most Popular',
-    SCORE_DESC:      'Top Rated',
-  };
-
-  async function fetchPage(p) {
-    if (qParam) {
-      const d = await gql(Q.search, { s: qParam, p });
-      if (p === 1) {
-        const t = d.Page.pageInfo.total;
-        $('#pageTitle').textContent = `Results for "${qParam}"`;
-        $('#pageCount').textContent = `${t} anime found`;
-      }
-      moreBtn.onclick = () => fetchMore();
-      return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
-    }
-
-    if (genreParam) {
-      const d = await gql(Q.genre, { g: genreParam, p });
-      if (p === 1) $('#pageTitle').textContent = `${genreParam} Anime`;
-      return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
-    }
-
-    if (sortParam) {
-      const d = await gql(Q.browse, { sort: [sortParam], p });
-      if (p === 1) $('#pageTitle').textContent = SORT_LABELS[sortParam] || 'Browse';
-      return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
-    }
-
-    // Default — popular
-    const d = await gql(Q.popular);
-    $('#pageTitle').textContent = 'Popular Anime';
-    return { items: d.Page.media, hasMore: false };
-  }
-
-  async function init() {
-    const { items, hasMore } = await fetchPage(1);
-
-    grid.innerHTML = '';
-    if (!items.length) {
-      grid.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">🔍</div>
-          <div class="empty-title">No results found</div>
-          <div class="empty-body">Try a different search term or genre</div>
-        </div>`;
-      return;
-    }
-
-    items.forEach(a => grid.appendChild(card(a)));
-    if (hasMore) moreWrap.style.display = 'block';
-  }
-
-  async function fetchMore() {
-    if (loading) return;
-    loading = true;
-    moreBtn.textContent = 'Loading…';
-    moreBtn.disabled = true;
-
-    page++;
-    const { items, hasMore } = await fetchPage(page);
-    items.forEach(a => grid.appendChild(card(a)));
-
-    if (!hasMore) moreWrap.style.display = 'none';
-    else {
-      moreBtn.textContent = 'Load More';
-      moreBtn.disabled = false;
-    }
-    loading = false;
-  }
-
-  moreBtn.addEventListener('click', fetchMore);
-
-  init().catch(err => {
-    console.error(err);
-    grid.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">⚠️</div>
-        <div class="empty-title">Failed to load</div>
-        <div class="empty-body">${err.message}</div>
-      </div>`;
-  });
-</script>
-</body>
-</html>
+    <li><a href="watchlist.html">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+  </ul>
+
+  <div class="nav-search">
+
+    <span class="search-icon">🔍</span>
+
+    <input type="text" id="navSearch" placeholder="Search anime...">
+
+    <div class="search-drop" id="searchDrop"></div>
+
+  </div>
+
+</nav>
+
+
+
+<div class="page">
+
+  <div class="search-wrap">
+
+
+
+    <div style="margin-bottom:1.75rem">
+
+      <h1 class="search-page-title" id="pageTitle">Loading…</h1>
+
+      <div class="search-count" id="pageCount"></div>
+
+    </div>
+
+
+
+    <div class="grid" id="resultGrid"></div>
+
+
+
+    <div id="moreWrap" style="text-align:center;margin-top:2.5rem;display:none">
+
+      <button class="btn btn-ghost" id="moreBtn">Load More</button>
+
+    </div>
+
+
+
+  </div>
+
+</div>
+
+
+
+<script src="app.js"></script>
+
+<script>
+
+  const qParam    = P.get('q');
+
+  const genreParam = P.get('genre');
+
+  const sortParam  = P.get('sort');
+
+
+
+  let page    = 1;
+
+  let loading = false;
+
+
+
+  const grid    = $('#resultGrid');
+
+  const moreWrap = $('#moreWrap');
+
+  const moreBtn  = $('#moreBtn');
+
+
+
+  skels(grid, 20);
+
+
+
+  const SORT_LABELS = {
+
+    TRENDING_DESC:   'Trending',
+
+    POPULARITY_DESC: 'Most Popular',
+
+    SCORE_DESC:      'Top Rated',
+
+  };
+
+
+
+  async function fetchPage(p) {
+
+    if (qParam) {
+
+      const d = await gql(Q.search, { s: qParam, p });
+
+      if (p === 1) {
+
+        const t = d.Page.pageInfo.total;
+
+        $('#pageTitle').textContent = `Results for "${qParam}"`;
+
+        $('#pageCount').textContent = `${t} anime found`;
+
+      }
+
+      moreBtn.onclick = () => fetchMore();
+
+      return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
+
+    }
+
+
+
+    if (genreParam) {
+
+      const d = await gql(Q.genre, { g: genreParam, p });
+
+      if (p === 1) $('#pageTitle').textContent = `${genreParam} Anime`;
+
+      return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
+
+    }
+
+
+
+    if (sortParam) {
+
+      const d = await gql(Q.browse, { sort: [sortParam], p });
+
+      if (p === 1) $('#pageTitle').textContent = SORT_LABELS[sortParam] || 'Browse';
+
+      return { items: d.Page.media, hasMore: d.Page.pageInfo.hasNextPage };
+
+    }
+
+
+
+    // Default — popular
+
+    const d = await gql(Q.popular);
+
+    $('#pageTitle').textContent = 'Popular Anime';
+
+    return { items: d.Page.media, hasMore: false };
+
+  }
+
+
+
+  async function init() {
+
+    const { items, hasMore } = await fetchPage(1);
+
+
+
+    grid.innerHTML = '';
+
+    if (!items.length) {
+
+      grid.innerHTML = `
+
+        <div class="empty">
+
+          <div class="empty-icon">🔍</div>
+
+          <div class="empty-title">No results found</div>
+
+          <div class="empty-body">Try a different search term or genre</div>
+
+        </div>`;
+
+      return;
+
+    }
+
+
+
+    items.forEach(a => grid.appendChild(card(a)));
+
+    if (hasMore) moreWrap.style.display = 'block';
+
+  }
+
+
+
+  async function fetchMore() {
+
+    if (loading) return;
+
+    loading = true;
+
+    moreBtn.textContent = 'Loading…';
+
+    moreBtn.disabled = true;
+
+
+
+    page++;
+
+    const { items, hasMore } = await fetchPage(page);
+
+    items.forEach(a => grid.appendChild(card(a)));
+
+
+
+    if (!hasMore) moreWrap.style.display = 'none';
+
+    else {
+
+      moreBtn.textContent = 'Load More';
+
+      moreBtn.disabled = false;
+
+    }
+
+    loading = false;
+
+  }
+
+
+
+  moreBtn.addEventListener('click', fetchMore);
+
+
+
+  init().catch(err => {
+
+    console.error(err);
+
+    grid.innerHTML = `
+
+      <div class="empty">
+
+        <div class="empty-icon">⚠️</div>
+
+        <div class="empty-title">Failed to load</div>
+
+        <div class="empty-body">${err.message}</div>
+
+      </div>`;
+
+  });
+
+</script>
+
+</body>
+
+</html>
+

@@ -1,318 +1,624 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=database.html">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AnimeWeb — Watch Anime Free</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    .hero {
-      position: relative; width: 100%; height: 520px; overflow: hidden; margin-top: 62px;
-    }
-    .hero-bg {
-      position: absolute; inset: 0;
-      background-size: cover; background-position: center 20%;
-      transition: background-image 0.6s ease;
-    }
-    .hero-shade {
-      position: absolute; inset: 0;
-      background: linear-gradient(to right, rgba(9,9,15,0.95) 30%, rgba(9,9,15,0.4) 70%, transparent 100%),
-                  linear-gradient(to top, rgba(9,9,15,1) 0%, transparent 40%);
-    }
-    .hero-content { position: absolute; bottom: 2.5rem; left: 2.5rem; max-width: 500px; }
-    .hero-genres { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
-    .hero-genre {
-      font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 100px;
-      background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.35); color: var(--purple-lt);
-    }
-    .hero-title {
-      font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800;
-      line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 0.65rem;
-    }
-    .hero-desc {
-      font-size: 0.85rem; color: var(--muted); line-height: 1.6;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-      margin-bottom: 0.9rem;
-    }
-    .hero-stats { display: flex; gap: 1.25rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
-    .hero-stat-label { color: var(--dim); font-size: 0.7rem; margin-bottom: 1px; }
-    .hero-stat-val { font-weight: 600; font-size: 0.82rem; }
-    .hero-dots { position: absolute; bottom: 1.25rem; right: 2rem; display: flex; gap: 0.4rem; }
-    .hero-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: rgba(255,255,255,0.25); cursor: pointer; transition: all var(--t);
-    }
-    .hero-dot.on { background: var(--purple); width: 20px; border-radius: 3px; }
-
-    /* Genre bar */
-    .genre-bar {
-      display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem;
-      scrollbar-width: none; margin-bottom: 2rem;
-    }
-    .genre-bar::-webkit-scrollbar { display: none; }
-    .genre-chip {
-      flex-shrink: 0; padding: 0.38rem 1rem; border-radius: 100px;
-      font-size: 0.78rem; font-weight: 600; cursor: pointer;
-      border: 1px solid var(--border); background: var(--card); color: var(--muted);
-      transition: all var(--t); text-decoration: none;
-    }
-    .genre-chip:hover { border-color: var(--purple); color: var(--text); }
-
-    .home-wrap { padding: 2rem 2rem 4rem; max-width: 1400px; margin: 0 auto; }
-    .section-row { margin-bottom: 2.5rem; }
-    .section-row-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
-    .section-row-title { font-size: 1.05rem; font-weight: 700; }
-    .section-row-more { font-size: 0.78rem; color: var(--muted); font-weight: 500; transition: color var(--t); }
-    .section-row-more:hover { color: var(--purple); }
-
-    .card-row { display: flex; gap: 0.85rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; }
-    .card-row::-webkit-scrollbar { display: none; }
-    .card-row .acard { flex: 0 0 148px; width: 148px; }
-  </style>
-</head>
+
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AnimeWeb — Watch Anime Free</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+
+    .hero {
+
+      position: relative; width: 100%; height: 520px; overflow: hidden; margin-top: 62px;
+
+    }
+
+    .hero-bg {
+
+      position: absolute; inset: 0;
+
+      background-size: cover; background-position: center 20%;
+
+      transition: background-image 0.6s ease;
+
+    }
+
+    .hero-shade {
+
+      position: absolute; inset: 0;
+
+      background: linear-gradient(to right, rgba(9,9,15,0.95) 30%, rgba(9,9,15,0.4) 70%, transparent 100%),
+
+                  linear-gradient(to top, rgba(9,9,15,1) 0%, transparent 40%);
+
+    }
+
+    .hero-content { position: absolute; bottom: 2.5rem; left: 2.5rem; max-width: 500px; }
+
+    .hero-genres { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+
+    .hero-genre {
+
+      font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 100px;
+
+      background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.35); color: var(--purple-lt);
+
+    }
+
+    .hero-title {
+
+      font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800;
+
+      line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 0.65rem;
+
+    }
+
+    .hero-desc {
+
+      font-size: 0.85rem; color: var(--muted); line-height: 1.6;
+
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+
+      margin-bottom: 0.9rem;
+
+    }
+
+    .hero-stats { display: flex; gap: 1.25rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+
+    .hero-stat-label { color: var(--dim); font-size: 0.7rem; margin-bottom: 1px; }
+
+    .hero-stat-val { font-weight: 600; font-size: 0.82rem; }
+
+    .hero-dots { position: absolute; bottom: 1.25rem; right: 2rem; display: flex; gap: 0.4rem; }
+
+    .hero-dot {
+
+      width: 6px; height: 6px; border-radius: 50%;
+
+      background: rgba(255,255,255,0.25); cursor: pointer; transition: all var(--t);
+
+    }
+
+    .hero-dot.on { background: var(--purple); width: 20px; border-radius: 3px; }
+
+
+
+    /* Genre bar */
+
+    .genre-bar {
+
+      display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem;
+
+      scrollbar-width: none; margin-bottom: 2rem;
+
+    }
+
+    .genre-bar::-webkit-scrollbar { display: none; }
+
+    .genre-chip {
+
+      flex-shrink: 0; padding: 0.38rem 1rem; border-radius: 100px;
+
+      font-size: 0.78rem; font-weight: 600; cursor: pointer;
+
+      border: 1px solid var(--border); background: var(--card); color: var(--muted);
+
+      transition: all var(--t); text-decoration: none;
+
+    }
+
+    .genre-chip:hover { border-color: var(--purple); color: var(--text); }
+
+
+
+    .home-wrap { padding: 2rem 2rem 4rem; max-width: 1400px; margin: 0 auto; }
+
+    .section-row { margin-bottom: 2.5rem; }
+
+    .section-row-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
+
+    .section-row-title { font-size: 1.05rem; font-weight: 700; }
+
+    .section-row-more { font-size: 0.78rem; color: var(--muted); font-weight: 500; transition: color var(--t); }
+
+    .section-row-more:hover { color: var(--purple); }
+
+
+
+    .card-row { display: flex; gap: 0.85rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; }
+
+    .card-row::-webkit-scrollbar { display: none; }
+
+    .card-row .acard { flex: 0 0 148px; width: 148px; }
+
+  </style>
+
+</head>
+
 <body>
-<script>location.replace("database.html");</script>
-
-<nav class="navbar">
-  <a href="index.html" class="nav-logo">
-    <img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb
-  </a>
-  <ul class="nav-links">
-    <li><a href="index.html" class="active">Home</a></li>
+
+
+
+<nav class="navbar">
+
+  <a href="index.html" class="nav-logo">
+
+    <img src="logo.svg" style="height:26px;width:26px;border-radius:6px;flex-shrink:0"> AnimeWeb
+
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="database.html">Database</a></li>
     <li><a href="movies.html">Movies</a></li>
-    <li><a href="database.html">Database</a></li>
-    <li><a href="watchlist.html">My List</a></li>
-    <li><a href="browse.html">Browse Free</a></li>
-    <li><a href="about.html">About</a></li>
-  </ul>
-  <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="navSearch" placeholder="Search anime...">
-    <div class="search-drop" id="searchDrop"></div>
-  </div>
-</nav>
-
-<div class="hero" id="hero">
-  <div class="hero-bg" id="heroBg"></div>
-  <div class="hero-shade"></div>
-  <div class="hero-content">
-    <div class="hero-genres" id="heroGenres"></div>
-    <div class="hero-title" id="heroTitle">Loading…</div>
-    <div class="hero-desc" id="heroDesc"></div>
-    <div class="hero-stats" id="heroStats"></div>
-    <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
-      <button class="btn btn-primary" id="heroWatch">▶ Start Watching</button>
-      <a href="browse.html" class="btn btn-ghost">Browse Sites</a>
-    </div>
-  </div>
-  <div class="hero-dots" id="heroDots"></div>
-</div>
-
-<div class="home-wrap">
-
-  <!-- Genre bar -->
-  <div class="genre-bar" id="genreBar"></div>
-
-  <!-- Initial D Feature -->
-  <div class="section-row" style="border:1px solid rgba(168,85,247,0.25);border-radius:var(--r-lg);padding:1.25rem;background:linear-gradient(135deg,rgba(168,85,247,0.06) 0%,transparent 100%);margin-bottom:2.5rem">
-    <div class="section-row-head">
-      <span class="section-row-title">🚗 Initial D — Complete Series</span>
-      <a href="browse.html?q=Initial%20D" class="section-row-more">Watch →</a>
-    </div>
-    <div style="font-size:0.78rem;color:var(--dim);margin-bottom:1rem">The legendary street racing anime. All stages, from First to Final.</div>
-    <div class="card-row" id="initialDRow"></div>
-  </div>
-
-  <!-- This Season -->
-  <div class="section-row">
-    <div class="section-row-head">
-      <span class="section-row-title" id="seasonLabel">🌸 This Season</span>
-      <a href="search.html?sort=TRENDING_DESC" class="section-row-more">See all →</a>
-    </div>
-    <div class="card-row" id="seasonRow"></div>
-  </div>
-
-  <!-- New Releases -->
-  <div class="section-row">
-    <div class="section-row-head">
-      <span class="section-row-title">🆕 New Releases</span>
-      <a href="search.html?sort=START_DATE_DESC" class="section-row-more">See all →</a>
-    </div>
-    <div class="card-row" id="newRow"></div>
-  </div>
-
-  <!-- Trending -->
-  <div class="section-row">
-    <div class="section-row-head">
-      <span class="section-row-title">🔥 Trending Now</span>
-      <a href="search.html?sort=TRENDING_DESC" class="section-row-more">See all →</a>
-    </div>
-    <div class="card-row" id="trendingRow"></div>
-  </div>
-
-  <!-- Popular -->
-  <div class="section-row">
-    <div class="section-row-head">
-      <span class="section-row-title">⭐ Most Popular</span>
-      <a href="search.html?sort=POPULARITY_DESC" class="section-row-more">See all →</a>
-    </div>
-    <div class="card-row" id="popularRow"></div>
-  </div>
-
-  <!-- Top Rated -->
-  <div class="section-row">
-    <div class="section-row-head">
-      <span class="section-row-title">🏆 Top Rated</span>
-      <a href="search.html?sort=SCORE_DESC" class="section-row-more">See all →</a>
-    </div>
-    <div class="card-row" id="topRatedRow"></div>
-  </div>
-
-</div>
-
-<script src="app.js"></script>
-<script>
-  const GENRES = ['Action','Adventure','Comedy','Drama','Fantasy','Horror','Mystery','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller','Mecha','Music'];
-  const SEASON_ICONS = { WINTER:'❄️', SPRING:'🌸', SUMMER:'☀️', FALL:'🍂' };
-
-  let heroAnime = [], heroIdx = 0, heroTimer;
-
-  function setHero(a) {
-    $('#heroBg').style.backgroundImage = `url('${a.bannerImage || a.coverImage?.extraLarge || ''}')`;
-    $('#heroTitle').textContent = a.title.english || a.title.romaji;
-    $('#heroDesc').textContent  = fmt.plain(a.description || '');
-    $('#heroGenres').innerHTML  = (a.genres || []).slice(0, 4)
-      .map(g => `<span class="hero-genre">${g}</span>`).join('');
-    $('#heroStats').innerHTML = [
-      a.averageScore ? { l:'Score',    v:`★ ${fmt.score(a.averageScore)}` } : null,
-      a.episodes     ? { l:'Episodes', v: a.episodes }                       : null,
-      a.status       ? { l:'Status',   v: fmt.status(a.status) }             : null,
-      a.seasonYear   ? { l:'Year',     v: a.seasonYear }                     : null,
-    ].filter(Boolean).map(s => `
-      <div class="hero-stat">
-        <div class="hero-stat-label">${s.l}</div>
-        <div class="hero-stat-val">${s.v}</div>
-      </div>`).join('');
-    $('#heroWatch').onclick = () => location.href = 'browse.html';
-  }
-
-  function buildDots(n) {
-    $('#heroDots').innerHTML = '';
-    for (let i = 0; i < n; i++) {
-      const d = mk('div', `hero-dot${i === 0 ? ' on' : ''}`);
-      d.addEventListener('click', () => cycleHero(i));
-      $('#heroDots').appendChild(d);
-    }
-  }
-
-  function cycleHero(i) {
-    heroIdx = i;
-    setHero(heroAnime[i]);
-    $$('.hero-dot').forEach((d, j) => d.classList.toggle('on', j === i));
-    clearInterval(heroTimer);
-    heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
-  }
-
-  function showcaseCard(a) {
-    const title = a.title.english || a.title.romaji;
-    const img   = a.coverImage?.extraLarge || a.coverImage?.large || '';
-    const score = a.averageScore ? `<span class="acard-score">★ ${fmt.score(a.averageScore)}</span>` : '';
-    const eps   = a.episodes ? `<span>${a.episodes}ep</span>` : '';
-    const c = mk('div', 'acard');
-    c.style.cursor = 'default';
-    c.innerHTML = `
-      <img src="${img}" alt="" loading="lazy">
-      <div class="acard-info">
-        <div class="acard-title">${title}</div>
-        <div class="acard-meta">${score}${score && eps ? ' · ' : ''}${eps}</div>
-      </div>`;
-    c.querySelector('img').onerror = function() {
-      this.parentElement.style.background = 'var(--card-hover)';
-      this.style.display = 'none';
-    };
-    return c;
-  }
-
-  function fillRow(el, items) {
-    el.innerHTML = '';
-    items.forEach(a => el.appendChild(showcaseCard(a)));
-  }
-
-  // ── sessionStorage cache (5 min TTL) ──
-  const CACHE_TTL = 5 * 60 * 1000;
-  function cacheGet(key) {
-    try {
-      const e = JSON.parse(sessionStorage.getItem(key));
-      if (e && Date.now() - e.ts < CACHE_TTL) return e.data;
-    } catch {}
-    return null;
-  }
-  function cacheSet(key, data) {
-    try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
-  }
-  async function cachedGql(key, query, vars) {
-    const hit = cacheGet(key);
-    if (hit) return hit;
-    const data = await gql(query, vars);
-    cacheSet(key, data);
-    return data;
-  }
-
-  async function init() {
-    // Genre bar
-    const bar = $('#genreBar');
-    GENRES.forEach(g => {
-      const a = mk('a', 'genre-chip', g);
-      a.href = `search.html?genre=${encodeURIComponent(g)}`;
-      bar.appendChild(a);
-    });
-
-    const season = currentSeason();
-    const year   = new Date().getFullYear();
-    $('#seasonLabel').textContent = `${SEASON_ICONS[season]} ${season[0]}${season.slice(1).toLowerCase()} ${year}`;
-
-    ['initialDRow','seasonRow','newRow','trendingRow','popularRow','topRatedRow'].forEach(id => skels($(`#${id}`), 9));
-
-    const INITIAL_D_IDS = [185, 186, 187, 18, 15059, 19613, 20842, 20990, 21289];
-    const initialDQuery = `query($ids:[Int]){ Page(page:1,perPage:20){ media(id_in:$ids,type:ANIME){ id title{romaji english} coverImage{extraLarge large} episodes averageScore format } } }`;
-    // First batch: hero-critical + Initial D together
-    const [trending, initialD] = await Promise.all([
-      cachedGql('trending', Q.trending),
-      cachedGql('initialD_v2', initialDQuery, { ids: INITIAL_D_IDS }),
-    ]);
-
-    heroAnime = trending.Page.media.filter(a => a.bannerImage || a.coverImage?.extraLarge).slice(0, 5);
-    if (heroAnime.length) {
-      setHero(heroAnime[0]);
-      buildDots(heroAnime.length);
-      heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
-    }
-    fillRow($('#trendingRow'), trending.Page.media);
-
-    const idRow = $('#initialDRow');
-    idRow.innerHTML = '';
-    const mediaMap = {};
-    initialD.Page.media.forEach(m => { mediaMap[m.id] = m; });
-    INITIAL_D_IDS.forEach(id => { if (mediaMap[id]) idRow.appendChild(showcaseCard(mediaMap[id])); });
-
-    // Second batch: remaining rows
-    const [seasonal, newRel, popular, topRated] = await Promise.all([
-      cachedGql(`seasonal-${season}-${year}`, Q.seasonal, { season, year }),
-      cachedGql('newReleases', Q.newReleases),
-      cachedGql('popular', Q.popular),
-      cachedGql('topRated', Q.topRated),
-    ]);
-
-    fillRow($('#seasonRow'),   seasonal.Page.media);
-    fillRow($('#newRow'),      newRel.Page.media);
-    fillRow($('#popularRow'),  popular.Page.media);
-    fillRow($('#topRatedRow'), topRated.Page.media);
-  }
-
-  init().catch(console.error);
-</script>
-</body>
-</html>
+    <li><a href="watchlist.html">My List</a></li>
+    <li><a href="browse.html">Browse Free</a></li>
+  </ul>
+
+  <div class="nav-search">
+
+    <span class="search-icon">🔍</span>
+
+    <input type="text" id="navSearch" placeholder="Search anime...">
+
+    <div class="search-drop" id="searchDrop"></div>
+
+  </div>
+
+</nav>
+
+
+
+<div class="hero" id="hero">
+
+  <div class="hero-bg" id="heroBg"></div>
+
+  <div class="hero-shade"></div>
+
+  <div class="hero-content">
+
+    <div class="hero-genres" id="heroGenres"></div>
+
+    <div class="hero-title" id="heroTitle">Loading…</div>
+
+    <div class="hero-desc" id="heroDesc"></div>
+
+    <div class="hero-stats" id="heroStats"></div>
+
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+
+      <button class="btn btn-primary" id="heroWatch">▶ Start Watching</button>
+
+      <a href="browse.html" class="btn btn-ghost">Browse Sites</a>
+
+    </div>
+
+  </div>
+
+  <div class="hero-dots" id="heroDots"></div>
+
+</div>
+
+
+
+<div class="home-wrap">
+
+
+
+  <!-- Genre bar -->
+
+  <div class="genre-bar" id="genreBar"></div>
+
+
+
+  <!-- Initial D Feature -->
+
+  <div class="section-row" style="border:1px solid rgba(168,85,247,0.25);border-radius:var(--r-lg);padding:1.25rem;background:linear-gradient(135deg,rgba(168,85,247,0.06) 0%,transparent 100%);margin-bottom:2.5rem">
+
+    <div class="section-row-head">
+
+      <span class="section-row-title">🚗 Initial D — Complete Series</span>
+
+      <a href="browse.html?q=Initial%20D" class="section-row-more">Watch →</a>
+
+    </div>
+
+    <div style="font-size:0.78rem;color:var(--dim);margin-bottom:1rem">The legendary street racing anime. All stages, from First to Final.</div>
+
+    <div class="card-row" id="initialDRow"></div>
+
+  </div>
+
+
+
+  <!-- This Season -->
+
+  <div class="section-row">
+
+    <div class="section-row-head">
+
+      <span class="section-row-title" id="seasonLabel">🌸 This Season</span>
+
+      <a href="search.html?sort=TRENDING_DESC" class="section-row-more">See all →</a>
+
+    </div>
+
+    <div class="card-row" id="seasonRow"></div>
+
+  </div>
+
+
+
+  <!-- New Releases -->
+
+  <div class="section-row">
+
+    <div class="section-row-head">
+
+      <span class="section-row-title">🆕 New Releases</span>
+
+      <a href="search.html?sort=START_DATE_DESC" class="section-row-more">See all →</a>
+
+    </div>
+
+    <div class="card-row" id="newRow"></div>
+
+  </div>
+
+
+
+  <!-- Trending -->
+
+  <div class="section-row">
+
+    <div class="section-row-head">
+
+      <span class="section-row-title">🔥 Trending Now</span>
+
+      <a href="search.html?sort=TRENDING_DESC" class="section-row-more">See all →</a>
+
+    </div>
+
+    <div class="card-row" id="trendingRow"></div>
+
+  </div>
+
+
+
+  <!-- Popular -->
+
+  <div class="section-row">
+
+    <div class="section-row-head">
+
+      <span class="section-row-title">⭐ Most Popular</span>
+
+      <a href="search.html?sort=POPULARITY_DESC" class="section-row-more">See all →</a>
+
+    </div>
+
+    <div class="card-row" id="popularRow"></div>
+
+  </div>
+
+
+
+  <!-- Top Rated -->
+
+  <div class="section-row">
+
+    <div class="section-row-head">
+
+      <span class="section-row-title">🏆 Top Rated</span>
+
+      <a href="search.html?sort=SCORE_DESC" class="section-row-more">See all →</a>
+
+    </div>
+
+    <div class="card-row" id="topRatedRow"></div>
+
+  </div>
+
+
+
+</div>
+
+
+
+<script src="app.js"></script>
+
+<script>
+
+  const GENRES = ['Action','Adventure','Comedy','Drama','Fantasy','Horror','Mystery','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller','Mecha','Music'];
+
+  const SEASON_ICONS = { WINTER:'❄️', SPRING:'🌸', SUMMER:'☀️', FALL:'🍂' };
+
+
+
+  let heroAnime = [], heroIdx = 0, heroTimer;
+
+
+
+  function setHero(a) {
+
+    $('#heroBg').style.backgroundImage = `url('${a.bannerImage || a.coverImage?.extraLarge || ''}')`;
+
+    $('#heroTitle').textContent = a.title.english || a.title.romaji;
+
+    $('#heroDesc').textContent  = fmt.plain(a.description || '');
+
+    $('#heroGenres').innerHTML  = (a.genres || []).slice(0, 4)
+
+      .map(g => `<span class="hero-genre">${g}</span>`).join('');
+
+    $('#heroStats').innerHTML = [
+
+      a.averageScore ? { l:'Score',    v:`★ ${fmt.score(a.averageScore)}` } : null,
+
+      a.episodes     ? { l:'Episodes', v: a.episodes }                       : null,
+
+      a.status       ? { l:'Status',   v: fmt.status(a.status) }             : null,
+
+      a.seasonYear   ? { l:'Year',     v: a.seasonYear }                     : null,
+
+    ].filter(Boolean).map(s => `
+
+      <div class="hero-stat">
+
+        <div class="hero-stat-label">${s.l}</div>
+
+        <div class="hero-stat-val">${s.v}</div>
+
+      </div>`).join('');
+
+    $('#heroWatch').onclick = () => P.go('anime.html', { id: heroAnime[heroIdx]?.id });
+
+  }
+
+
+
+  function buildDots(n) {
+
+    $('#heroDots').innerHTML = '';
+
+    for (let i = 0; i < n; i++) {
+
+      const d = mk('div', `hero-dot${i === 0 ? ' on' : ''}`);
+
+      d.addEventListener('click', () => cycleHero(i));
+
+      $('#heroDots').appendChild(d);
+
+    }
+
+  }
+
+
+
+  function cycleHero(i) {
+
+    heroIdx = i;
+
+    setHero(heroAnime[i]);
+
+    $$('.hero-dot').forEach((d, j) => d.classList.toggle('on', j === i));
+
+    clearInterval(heroTimer);
+
+    heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
+
+  }
+
+
+
+  function showcaseCard(a) {
+
+    const title = a.title.english || a.title.romaji;
+
+    const img   = a.coverImage?.extraLarge || a.coverImage?.large || '';
+
+    const score = a.averageScore ? `<span class="acard-score">★ ${fmt.score(a.averageScore)}</span>` : '';
+
+    const eps   = a.episodes ? `<span>${a.episodes}ep</span>` : '';
+
+    const c = mk('div', 'acard');
+
+  
+    c.innerHTML = `
+
+      <img src="${img}" alt="" loading="lazy">
+
+      <div class="acard-info">
+
+        <div class="acard-title">${title}</div>
+
+        <div class="acard-meta">${score}${score && eps ? ' · ' : ''}${eps}</div>
+
+      </div>`;
+
+    c.querySelector('img').onerror = function() {
+
+      this.parentElement.style.background = 'var(--card-hover)';
+
+      this.style.display = 'none';
+
+    };
+    c.addEventListener('click', () => P.go('anime.html', { id: a.id }));
+
+    return c;
+
+  }
+
+
+
+  function fillRow(el, items) {
+
+    el.innerHTML = '';
+
+    items.forEach(a => el.appendChild(showcaseCard(a)));
+
+  }
+
+
+
+  // ── sessionStorage cache (5 min TTL) ──
+
+  const CACHE_TTL = 5 * 60 * 1000;
+
+  function cacheGet(key) {
+
+    try {
+
+      const e = JSON.parse(sessionStorage.getItem(key));
+
+      if (e && Date.now() - e.ts < CACHE_TTL) return e.data;
+
+    } catch {}
+
+    return null;
+
+  }
+
+  function cacheSet(key, data) {
+
+    try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+
+  }
+
+  async function cachedGql(key, query, vars) {
+
+    const hit = cacheGet(key);
+
+    if (hit) return hit;
+
+    const data = await gql(query, vars);
+
+    cacheSet(key, data);
+
+    return data;
+
+  }
+
+
+
+  async function init() {
+
+    // Genre bar
+
+    const bar = $('#genreBar');
+
+    GENRES.forEach(g => {
+
+      const a = mk('a', 'genre-chip', g);
+
+      a.href = `search.html?genre=${encodeURIComponent(g)}`;
+
+      bar.appendChild(a);
+
+    });
+
+
+
+    const season = currentSeason();
+
+    const year   = new Date().getFullYear();
+
+    $('#seasonLabel').textContent = `${SEASON_ICONS[season]} ${season[0]}${season.slice(1).toLowerCase()} ${year}`;
+
+
+
+    ['initialDRow','seasonRow','newRow','trendingRow','popularRow','topRatedRow'].forEach(id => skels($(`#${id}`), 9));
+
+
+
+    const INITIAL_D_IDS = [185, 186, 187, 18, 15059, 19613, 20842, 20990, 21289];
+
+    const initialDQuery = `query($ids:[Int]){ Page(page:1,perPage:20){ media(id_in:$ids,type:ANIME){ id title{romaji english} coverImage{extraLarge large} episodes averageScore format } } }`;
+
+    // First batch: hero-critical + Initial D together
+
+    const [trending, initialD] = await Promise.all([
+
+      cachedGql('trending', Q.trending),
+
+      cachedGql('initialD_v2', initialDQuery, { ids: INITIAL_D_IDS }),
+
+    ]);
+
+
+
+    heroAnime = trending.Page.media.filter(a => a.bannerImage || a.coverImage?.extraLarge).slice(0, 5);
+
+    if (heroAnime.length) {
+
+      setHero(heroAnime[0]);
+
+      buildDots(heroAnime.length);
+
+      heroTimer = setInterval(() => cycleHero((heroIdx + 1) % heroAnime.length), 6000);
+
+    }
+
+    fillRow($('#trendingRow'), trending.Page.media);
+
+
+
+    const idRow = $('#initialDRow');
+
+    idRow.innerHTML = '';
+
+    const mediaMap = {};
+
+    initialD.Page.media.forEach(m => { mediaMap[m.id] = m; });
+
+    INITIAL_D_IDS.forEach(id => { if (mediaMap[id]) idRow.appendChild(showcaseCard(mediaMap[id])); });
+
+
+
+    // Second batch: remaining rows
+
+    const [seasonal, newRel, popular, topRated] = await Promise.all([
+
+      cachedGql(`seasonal-${season}-${year}`, Q.seasonal, { season, year }),
+
+      cachedGql('newReleases', Q.newReleases),
+
+      cachedGql('popular', Q.popular),
+
+      cachedGql('topRated', Q.topRated),
+
+    ]);
+
+
+
+    fillRow($('#seasonRow'),   seasonal.Page.media);
+
+    fillRow($('#newRow'),      newRel.Page.media);
+
+    fillRow($('#popularRow'),  popular.Page.media);
+
+    fillRow($('#topRatedRow'), topRated.Page.media);
+
+  }
+
+
+
+  init().catch(console.error);
+
+</script>
+
+</body>
+
+</html>
+
