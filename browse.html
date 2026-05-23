@@ -532,8 +532,15 @@ if (searchQ) {
   topSiteName.textContent = `HiAnime — "${searchQ}"`;
 }
 
-renderList();
-if (!searchQ) loadSite(0); // default: HiAnime
+// Load latest sites from AnimeDb
+fetch('https://ccguvycu.github.io/animedb-site/api/sites.json')
+  .then(r => r.json())
+  .then(data => {
+    SITES = data.sites;
+    renderList();
+    if (!searchQ) loadSite(0);
+  })
+  .catch(() => { renderList(); if (!searchQ) loadSite(0); }); // default: HiAnime
 </script>
 </body>
 </html>

@@ -502,7 +502,7 @@ async function init() {
   loadAiring(); // fire in parallel — don't await
 
   try {
-    const r    = await fetch('data/anime-ids.json');
+    const r    = await fetch('https://ccguvycu.github.io/animedb-site/api/anime-ids.json');
     const data = await r.json();
     ALL_IDS = data.ids || [];
     TOTAL   = ALL_IDS.length;

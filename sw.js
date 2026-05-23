@@ -10,7 +10,7 @@ const ASSETS = [
   '/anistream-site/app.js',
   '/anistream-site/style.css',
   '/anistream-site/logo.svg',
-  '/anistream-site/data/anime-ids.json',
+  // AnimeDb feeds this now,
 ];
 
 // ── Install — cache static assets ─────────────────────────────────────────────
